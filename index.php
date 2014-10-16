@@ -2,8 +2,8 @@
 
 	require_once("HTMLView.php");
 	require_once("Controller/LoginController.php");
-	//require_once("LoginView.php");
-	//require_once("LoginModel.php");
+	require_once("View/SiteView.php");
+	require_once("Model/SiteModel.php");
 
 	session_start();
 
