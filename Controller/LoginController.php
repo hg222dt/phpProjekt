@@ -2,6 +2,7 @@
 
 require_once("../phpProjekt/View/SiteView.php");
 require_once("../phpProjekt/Model/SiteModel.php");
+require_once("RegisterController.php");
 
 class LoginController {
 
@@ -27,6 +28,9 @@ class LoginController {
 					if($this->siteModel->tryLogin($this->siteView->getPostedLoginCred())){
 						$this->siteView->setMessage(SiteView::MESSAGE_USER_LOGGED_IN);
 						return $this->siteView->showLoggedInPage();
+					} else {
+						$this->siteView->setMessage(SiteView::MESSAGE_FAILED_LOGIN);
+						return $this->siteView->showLobby();
 					}
 					break;
 
@@ -44,16 +48,10 @@ class LoginController {
 
 					$postedRegCred = $this->siteView->getPostedRegCred();
 					
-					//Kolla om lösenordet är inte är som upprepade lösenordet
-					if(strcmp($postedRegCred->password, $postedRegCred->repeatedPassword) != 0) {
-						$this->siteView->setMessage("Lösenordet och det upprepade lösenordet stämmer inte överens");
-						return $this->siteView->showRegisterPage();
-					}
-
-					//Kolla så att det har går att registrera användaren
+					//Kolla så att det har går att registrera användaren. Validera
 					try {
 						$regValidation = $this->siteModel->regNewUser($postedRegCred);
-						$this->siteView->setMessage("Registreringen lyckades!");
+						$this->siteView->setMessage(SiteView::MESSAGE_REGISTER_SUCCESS);
 						return $this->siteView->showLobby();
 					} catch (Exception $e) {
 						$this->siteView->setMessage($e->getMessage());
@@ -61,6 +59,8 @@ class LoginController {
 					}
 
 					break;
+
+
 
 				default:
 					return $this->siteView->showLobby();

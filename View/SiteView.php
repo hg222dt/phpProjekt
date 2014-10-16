@@ -15,6 +15,7 @@ class SiteView {
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
 	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
+	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
 
 	private $siteModel;
 	private $pageMessage;
@@ -114,6 +115,11 @@ class SiteView {
 	}
 
 	public function getPostedRegCred() {
-		return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
+
+		if(isset($_POST['posted_role'])) {
+			return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
+		} else {
+			return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
+		}
 	}
 }
