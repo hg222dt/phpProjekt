@@ -8,7 +8,7 @@ require_once("../phpProjekt/Model/Quizzie.php");
 
 require_once("QuizzDAL.php");
 require_once("QuestionDAL.php");
-
+require_once("AlternativesDAL.php");
 
 class SiteModel {
 
@@ -17,6 +17,9 @@ class SiteModel {
 	
 	private $userDAL;
 	public $quizzDAL;
+	public $questionDAL;
+	public $alternativesDAL;
+
 	public $currentUser;
 
 	public $quizzId;
@@ -30,6 +33,8 @@ class SiteModel {
 		
 		$this->userDAL = new UserDAL();
 		$this->quizzDAL = new QuizzDAL();
+		$this->questionDAL = new QuestionDAL();
+		$this->alternativesDAL = new AlternativesDAL();
 
 	}
 
@@ -117,4 +122,28 @@ class SiteModel {
 		$_SESSION['ActiveQuizzId'] = $this->quizzDAL->getLatestQuizzId();
 	}
 
+	public function setActiveQuestionId() {
+		$_SESSION['ActiveQuestionId'] = $this->questionDAL->getLatestQuizzId();
+	}
+
+	public function getActiveQuizzId() {
+		return $_SESSION['ActiveQuizzId'];
+	}
+
+	public function getActiveQuestionId() {
+		return $_SESSION['ActiveQuestionId'];
+	}
+
+	public function saveQuizzQuestion($questionText) {
+
+		$quizzId = $this->getActiveQuizzId();
+
+		$this->questionDAL->addQuestion($quizzId, $questionText);
+		$this->setActiveQuestionId();
+
+	}
+
+	public function saveQuizzAlternatives($alternatives) {
+		$this->alternativesDAL->addAlternatives($alternatives, $this->getActiveQuestionId());
+	}
 }

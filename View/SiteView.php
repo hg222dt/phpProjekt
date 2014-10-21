@@ -64,7 +64,7 @@ class SiteView {
 			case SiteView::ACTION_USER_SUBMIT_QUESTION:
 				return SiteView::ACTION_USER_SUBMIT_QUESTION;
 				break;
-				
+
 		}
 	}
 
@@ -167,24 +167,24 @@ class SiteView {
 	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
 	<br>
 	<input type='text' size='20' name='posted_alternative1' value=''>
-	<input type='radio' name='correctAnswer1' value='true'>Rätt</input>
-	<input type='radio' name='correctAnswer1' value='false'>Fel</input> 
+	<input type='radio' name='correctAnswer1' value='1'>Rätt</input>
+	<input type='radio' name='correctAnswer1' value='2'>Fel</input> 
 	<br>
 	<input type='text' size='20' name='posted_alternative2' value=''>
-	<input type='radio' name='correctAnswer2' value='true'>Rätt</input>
-	<input type='radio' name='correctAnswer2' value='false'>Fel</input>
+	<input type='radio' name='correctAnswer2' value='1'>Rätt</input>
+	<input type='radio' name='correctAnswer2' value='2'>Fel</input>
 	<br>
 	<input type='text' size='20' name='posted_alternative3' value=''>
-	<input type='radio' name='correctAnswer3' value='true'>Rätt</input>
-	<input type='radio' name='correctAnswer3' value='false'>Fel</input>
+	<input type='radio' name='correctAnswer3' value='1'>Rätt</input>
+	<input type='radio' name='correctAnswer3' value='2'>Fel</input>
 	<br>
 	<input type='text' size='20' name='posted_alternative4' value=''>
-	<input type='radio' name='correctAnswer4' value='true'>Rätt</input>
-	<input type='radio' name='correctAnswer4' value='false'>Fel</input>
+	<input type='radio' name='correctAnswer4' value='1'>Rätt</input>
+	<input type='radio' name='correctAnswer4' value='2'>Fel</input>
 	<br>
 	<input type='text' size='20' name='posted_alternative5' value=''>
-	<input type='radio' name='correctAnswer5' value='true'>Rätt</input>
-	<input type='radio' name='correctAnswer5' value='false'>Fel</input>
+	<input type='radio' name='correctAnswer5' value='1'>Rätt</input>
+	<input type='radio' name='correctAnswer5' value='2'>Fel</input>
 	<br>
 	<input type='submit' name='saveQuestion' value='Spara fråga'>
 </form>
@@ -232,10 +232,6 @@ class SiteView {
 		return $ret;
 	}
 
-	public function getQuestionText() {
-		return $_POST['questionText'];
-	}
-
 	public function getAlternatives() {
 
 		$alternatives = array();
@@ -243,7 +239,7 @@ class SiteView {
 		for($i=1; $i<6; $i++) {
 
 			if($_POST['posted_alternative'. $i] != "") {
-				$alternatives[$i-1] = $_POST['posted_alternative' . $i];
+				$alternatives[$_POST['posted_alternative' . $i]] = $_POST['correctAnswer' . $i];
 			}
 		}
 
@@ -252,5 +248,9 @@ class SiteView {
 
 	public function getQuizzName() {
 		return $_POST['quizzName'];
+	}
+
+	public function getQuestionText() {
+		return $_POST['questionText'];
 	}
 }

@@ -4,6 +4,7 @@ class QuestionDAL {
 	
 
 	private $dbConnection;
+	public $questionId;
 
 	public function __construct() {
 
@@ -16,8 +17,21 @@ class QuestionDAL {
 
 	}
 
-	public function addQuestion() {
-		
+	public function addQuestion($quizzId, $questionText) {
+		//Addera rad i table quizz
+		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Questions
+                                                            (Quizz_Id, QuestionText)
+                                                            VALUES ('$quizzId', '$questionText')");
+
+		$this->questionId = $this->dbConnection->insert_id;
+
+		var_dump($this->questionId);
+
+        $this->dbConnection->close();
+	}
+
+	public function getLatestQuizzId() {
+		return $this->questionId;
 	}
 
 }
