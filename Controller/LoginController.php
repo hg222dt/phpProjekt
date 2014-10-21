@@ -27,6 +27,7 @@ class LoginController {
 					//Verify LoginCredentials
 					if($this->siteModel->tryLogin($this->siteView->getPostedLoginCred())){
 						$this->siteView->setMessage(SiteView::MESSAGE_USER_LOGGED_IN);
+
 						return $this->siteView->showLoggedInPage();
 					} else {
 						$this->siteView->setMessage(SiteView::MESSAGE_FAILED_LOGIN);
@@ -60,7 +61,25 @@ class LoginController {
 
 					break;
 
+				case SiteView::ACTION_USER_CREATE_QUIZZ_PAGE:
 
+					return $this->siteView->showCreateQuizz();
+					break;
+
+				case SiteView::ACTION_USER_CREATE_NEW_QUIZZ:
+					//starta nytt quizz - gör en ny rad i tabellen quizz. spara dess id i sesseion plus notifiera att du är inloggad på det quizzet
+					$this->siteModel->startNewQuizz($this->siteView->getQuizzName());
+					
+					return $this->siteView->showCreateQuizzQuestion();
+					break;
+
+				case SiteView::ACTION_USER_SUBMIT_QUESTION:
+					//spara fråga i aktivt quizz
+
+
+					//Visa ny fråga
+					return $this->siteView->showCreateQuizzQuestion();
+					break;
 
 				default:
 					return $this->siteView->showLobby();

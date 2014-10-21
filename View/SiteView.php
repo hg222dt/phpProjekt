@@ -11,6 +11,9 @@ class SiteView {
 	const ACTION_USER_LOGS_IN_DEFAULT = "userTryLogIn";
 	const ACTION_USER_FAILED_LOGIN = "userFailedLogin";
 	const ACTION_USER_TRY_REGISTER = "userTryRegister";
+	const ACTION_USER_CREATE_QUIZZ_PAGE = "createQuizzPage";
+	const ACTION_USER_CREATE_NEW_QUIZZ = "createNewQuizz";
+	const ACTION_USER_SUBMIT_QUESTION = "userSubmitQuestion";
 
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
@@ -20,6 +23,8 @@ class SiteView {
 	private $siteModel;
 	private $pageMessage;
 	private $usernamePlaceholder;
+
+	private $currentUser;
 
 	public function __construct($siteModel) {
 		$this->siteModel = $siteModel;
@@ -47,6 +52,19 @@ class SiteView {
 			case SiteView::ACTION_USER_TRY_REGISTER:
 				return SiteView::ACTION_USER_TRY_REGISTER;
 				break;
+
+			case SiteView::ACTION_USER_CREATE_QUIZZ_PAGE:
+				return SiteView::ACTION_USER_CREATE_QUIZZ_PAGE;
+				break;
+
+			case SiteView::ACTION_USER_CREATE_NEW_QUIZZ:
+				return SiteView::ACTION_USER_CREATE_NEW_QUIZZ;
+				break;
+
+			case SiteView::ACTION_USER_SUBMIT_QUESTION:
+				return SiteView::ACTION_USER_SUBMIT_QUESTION;
+				break;
+				
 		}
 	}
 
@@ -57,7 +75,8 @@ class SiteView {
 
 	public function showLobby() {
 
-		$ret = "<h1>Välkommen till Quizz-siten</h1>
+		$ret = "
+<h1>Välkommen till Quizz-siten</h1>
 <h2>Logga in eller skapa ett nytt konto.</h2>
 <form action='?userTryLogIn' method='post'>
 	<fieldset>
@@ -102,9 +121,74 @@ class SiteView {
 	}
 
 	public function showLoggedInPage() {
-		$ret = "<h2>Välkommen till din sida</h2>
-		" . $this->pageMessage . "
-		<a href='?userLogsOut'>Logga ut</a>";
+
+		switch($this->siteModel->currentUser->userRole) {
+			case SiteModel::USER_TYPE_TEACHER:
+				return $this->getTeacherLayout();
+				break;
+
+			case SiteModel::USER_TYPE_STUDENT:
+				return $this->getStudentLayout();
+				break;
+
+			default:
+				throw new Exeption("Userrole is invalid.");
+				break;
+		}
+	}
+
+	public function showCreateQuizz() {
+
+		$ret="
+<h2>Skapa ett nytt quizz!</h2>
+<p>Börja genom att namnge ditt quizz och trycka ok! </p>
+<br>
+<form action='?createNewQuizz' method='post'>
+<input type='text' size='20' name='quizzName' value=''>
+<br>
+<input type='submit' name='saveQuestion' value='Skapa quizz!'>
+</form>
+		";
+
+		return $ret;
+	}
+
+	public function showCreateQuizzQuestion() {
+
+		$ret="
+<h2>Fråga 1</h1>
+<form action='?userSubmitQuestion' method='post'>
+	<label for='questionText'>Skriv fråga:</label>
+	<br>
+	<textarea rows='4' cols='50' id='questionText' name='questionText'>
+	</textarea>
+	
+	<br>
+	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
+	<br>
+	<input type='text' size='20' name='posted_alternative1' value=''>
+	<input type='radio' name='correctAnswer1' value='true'>Rätt</input>
+	<input type='radio' name='correctAnswer1' value='false'>Fel</input> 
+	<br>
+	<input type='text' size='20' name='posted_alternative2' value=''>
+	<input type='radio' name='correctAnswer2' value='true'>Rätt</input>
+	<input type='radio' name='correctAnswer2' value='false'>Fel</input>
+	<br>
+	<input type='text' size='20' name='posted_alternative3' value=''>
+	<input type='radio' name='correctAnswer3' value='true'>Rätt</input>
+	<input type='radio' name='correctAnswer3' value='false'>Fel</input>
+	<br>
+	<input type='text' size='20' name='posted_alternative4' value=''>
+	<input type='radio' name='correctAnswer4' value='true'>Rätt</input>
+	<input type='radio' name='correctAnswer4' value='false'>Fel</input>
+	<br>
+	<input type='text' size='20' name='posted_alternative5' value=''>
+	<input type='radio' name='correctAnswer5' value='true'>Rätt</input>
+	<input type='radio' name='correctAnswer5' value='false'>Fel</input>
+	<br>
+	<input type='submit' name='saveQuestion' value='Spara fråga'>
+</form>
+		";
 
 		return $ret;
 	}
@@ -121,5 +205,52 @@ class SiteView {
 		} else {
 			return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
 		}
+	}
+
+	public function getTeacherLayout() {
+
+		$currentUser = $this->siteModel->currentUser;
+
+		$ret = "<h2>Välkommen till din sida, lärare. Du är användarnamn: $currentUser->username</h2>
+		" . $this->pageMessage . "
+
+		<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a>
+
+		<a href='?userLogsOut'>Logga ut</a>";
+
+		return $ret;
+	}
+
+	public function getStudentLayout() {
+
+		$currentUser = $this->siteModel->currentUser;
+
+		$ret = "<h2>Välkommen till din sida, elev. Du är användarnamn: $currentUser->username</h2>
+		" . $this->pageMessage . "
+		<a href='?userLogsOut'>Logga ut</a>";
+		
+		return $ret;
+	}
+
+	public function getQuestionText() {
+		return $_POST['questionText'];
+	}
+
+	public function getAlternatives() {
+
+		$alternatives = array();
+
+		for($i=1; $i<6; $i++) {
+
+			if($_POST['posted_alternative'. $i] != "") {
+				$alternatives[$i-1] = $_POST['posted_alternative' . $i];
+			}
+		}
+
+		return $alternatives;
+	}
+
+	public function getQuizzName() {
+		return $_POST['quizzName'];
 	}
 }
