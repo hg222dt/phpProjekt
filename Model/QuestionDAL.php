@@ -17,15 +17,13 @@ class QuestionDAL {
 
 	}
 
-	public function addQuestion($quizzId, $questionText) {
+	public function addQuestion($quizzId, $questionText, $quizzOrderValue) {
 		//Addera rad i table quizz
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Questions
-                                                            (Quizz_Id, QuestionText)
-                                                            VALUES ('$quizzId', '$questionText')");
+                                                            (Quizz_Id, QuestionText, QuizzOrderValue)
+                                                            VALUES ('$quizzId', '$questionText', '$quizzOrderValue')");
 
 		$this->questionId = $this->dbConnection->insert_id;
-
-		var_dump($this->questionId);
 
         $this->dbConnection->close();
 	}

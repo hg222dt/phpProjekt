@@ -155,8 +155,10 @@ class SiteView {
 
 	public function showCreateQuizzQuestion() {
 
+		$questionId = $this->siteModel->getQuizzOrderValue();
+
 		$ret="
-<h2>Fråga 1</h1>
+<h2>Fråga $questionId</h1>
 <form action='?userSubmitQuestion' method='post'>
 	<label for='questionText'>Skriv fråga:</label>
 	<br>

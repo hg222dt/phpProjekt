@@ -68,19 +68,20 @@ class LoginController {
 
 				case SiteView::ACTION_USER_CREATE_NEW_QUIZZ:
 					//starta nytt quizz - gör en ny rad i tabellen quizz. spara dess id i sesseion plus notifiera att du är inloggad på det quizzet
+					$this->siteModel->setQuizzOrderValue(1);
 					$this->siteModel->startNewQuizz($this->siteView->getQuizzName());
-					
+
 					return $this->siteView->showCreateQuizzQuestion();
 					break;
 
 				case SiteView::ACTION_USER_SUBMIT_QUESTION:
+
 					//spara fråga i aktivt quizz
 					$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
 
-					var_dump($this->siteView->getAlternatives());
-					
 					$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
 
+					$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
 
 					//Visa ny fråga
 					return $this->siteView->showCreateQuizzQuestion();

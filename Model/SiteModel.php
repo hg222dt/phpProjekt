@@ -137,13 +137,22 @@ class SiteModel {
 	public function saveQuizzQuestion($questionText) {
 
 		$quizzId = $this->getActiveQuizzId();
+		$quizzOrderValue = $this->getQuizzOrderValue();
 
-		$this->questionDAL->addQuestion($quizzId, $questionText);
+		$this->questionDAL->addQuestion($quizzId, $questionText, $quizzOrderValue);
 		$this->setActiveQuestionId();
 
 	}
 
 	public function saveQuizzAlternatives($alternatives) {
 		$this->alternativesDAL->addAlternatives($alternatives, $this->getActiveQuestionId());
+	}
+
+	public function setQuizzOrderValue($quizzOrderValue) {
+		$_SESSION['quizzOrderValue'] = $quizzOrderValue;
+	}
+
+	public function getQuizzOrderValue() {
+		return $_SESSION['quizzOrderValue'];
 	}
 }
