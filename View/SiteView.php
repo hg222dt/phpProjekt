@@ -209,16 +209,39 @@ class SiteView {
 		}
 	}
 
+	public function getUserQuizzHTML() {
+		//Hämta alla användarens quizz
+
+		$userQuizzes = $this->siteModel->getUserQuizzes();
+
+		$ret = "";
+
+		foreach ($userQuizzes as $key => $value) {
+			$key = $key + 1;
+
+			$ret .= "<a href='#'>" . $key . ". " . $value . "</a><br>";
+		}
+
+		return $ret;
+
+	}
+
 	public function getTeacherLayout() {
 
 		$currentUser = $this->siteModel->currentUser;
 
-		$ret = "<h2>Välkommen till din sida, lärare. Du är användarnamn: $currentUser->username</h2>
-		" . $this->pageMessage . "
+		$ret = "
 
-		<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a>
+<h2>Välkommen till din sida, lärare. Du är användarnamn: $currentUser->username</h2>
+" . $this->pageMessage . "
+<h2>Dina skapade quizz</h2>
+" . $this->getUserQuizzHTML() . "
+<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a>
+<a href='?userLogsOut'>Logga ut</a>
 
-		<a href='?userLogsOut'>Logga ut</a>";
+
+
+		";
 
 		return $ret;
 	}

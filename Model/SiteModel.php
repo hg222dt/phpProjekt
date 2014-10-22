@@ -45,10 +45,12 @@ class SiteModel {
 		$username = $resultArray["Username"];
 		$password = $resultArray["Password"];
 		$userRole = $resultArray['Role'];
+		$userId = $resultArray['User_Id'];
 
 		if(strcmp($password, $loginCred->password) == 0) {
 
 			$this->currentUser = new CurrentUser($username, $userRole);
+			$this->setUserSession($userId);
 
 			return true;
 
@@ -113,7 +115,7 @@ class SiteModel {
 	}
 
 	public function startNewQuizz($quizzName) {
-		$this->quizzDAL->createNewQuizz($quizzName);
+		$this->quizzDAL->createNewQuizz($quizzName, $this->getUserSession());
 
 		$this->setActiveQuizzId();
 	}
@@ -154,5 +156,23 @@ class SiteModel {
 
 	public function getQuizzOrderValue() {
 		return $_SESSION['quizzOrderValue'];
+	}
+
+	public function setUserSession($userId) {
+		$_SESSION['userIdLoggedIn'] = $userId;
+	}
+
+	public function getUserSession() {
+		return $_SESSION['userIdLoggedIn'];
+	}
+
+	public function getUserQuizzes() {
+		$userId = $this->getUserSession();
+
+		$userQuizzes = array();
+
+		$userQuizzes = $this->quizzDAL->getAllQuizzNames($userId);
+
+		return $userQuizzes;
 	}
 }
