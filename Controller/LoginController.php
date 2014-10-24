@@ -87,6 +87,37 @@ class LoginController {
 					return $this->siteView->showCreateQuizzQuestion();
 					break;
 
+				case SiteView::ACTION_USER_EDIT_SPEC_QUIZZ_PAGE:
+					//Hämta quizz användaren valt
+					$quizzId = $this->siteView->getChosenItemId();
+
+					$ret = $this->siteView->showChoseQuizzQuestion($quizzId);
+					return $ret;
+
+					break;
+
+				case SiteView::ACTION_USER_GOTO_EDIT_QUIZZ:
+					$questionId = $this->siteView->getChosenItemId(); 
+					return $this->siteView->showEditQuizzQuestion($questionId);
+					break;
+
+				case SiteView::ACTION_USER_SAVE_EDIT_QUESTION:
+					//Ta fram id för quizz också? med hjälp av questionId;
+					$questionId = $this->siteView->getChosenItemId();
+
+					$this->siteModel->saveEditedQuestion($questionId, $this->siteView->getQuestionText(), $this->siteView->getAlternatives());
+
+					$quizzId = $this->siteModel->getQuizzIdFromQuestionId($questionId);
+					$this->siteView->setMessage(SiteView::MESSAGE_EDIT_SUCCESS);
+					return $this->siteView->showChoseQuizzQuestion(array_shift($quizzId));
+					break;
+
+				case SiteView::ACTION_USER_DELETE_QUIZZ:
+					$quizzId = $this->siteView->getChosenItemId();
+					$this->siteModel->deleteQuizz($quizzId);
+					return $this->siteView->showLoggedInPage(); 
+					break;
+
 				default:
 					return $this->siteView->showLobby();
 					break;

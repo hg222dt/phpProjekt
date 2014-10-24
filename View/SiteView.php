@@ -14,11 +14,16 @@ class SiteView {
 	const ACTION_USER_CREATE_QUIZZ_PAGE = "createQuizzPage";
 	const ACTION_USER_CREATE_NEW_QUIZZ = "createNewQuizz";
 	const ACTION_USER_SUBMIT_QUESTION = "userSubmitQuestion";
+	const ACTION_USER_EDIT_SPEC_QUIZZ_PAGE = "getSpecQuizzPage";
+	const ACTION_USER_GOTO_EDIT_QUIZZ = "userGotoEditQuizz";
+	const ACTION_USER_SAVE_EDIT_QUESTION = "saveEditQuestion";
+	const ACTION_USER_DELETE_QUIZZ = "deleteQuizz";
 
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
 	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
+	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
 
 	private $siteModel;
 	private $pageMessage;
@@ -63,6 +68,22 @@ class SiteView {
 
 			case SiteView::ACTION_USER_SUBMIT_QUESTION:
 				return SiteView::ACTION_USER_SUBMIT_QUESTION;
+				break;
+
+			case SiteView::ACTION_USER_GOTO_EDIT_QUIZZ:
+				return SiteView::ACTION_USER_GOTO_EDIT_QUIZZ;
+				break;
+
+			case SiteView::ACTION_USER_EDIT_SPEC_QUIZZ_PAGE:
+				return SiteView::ACTION_USER_EDIT_SPEC_QUIZZ_PAGE;
+				break;
+
+			case SiteView::ACTION_USER_SAVE_EDIT_QUESTION:
+				return SiteView::ACTION_USER_SAVE_EDIT_QUESTION;
+				break;
+
+			case SiteView::ACTION_USER_DELETE_QUIZZ:
+				return SiteView::ACTION_USER_DELETE_QUIZZ;
 				break;
 
 		}
@@ -122,7 +143,7 @@ class SiteView {
 
 	public function showLoggedInPage() {
 
-		switch($this->siteModel->currentUser->userRole) {
+		switch($this->siteModel->getSessionUserRole()) {
 			case SiteModel::USER_TYPE_TEACHER:
 				return $this->getTeacherLayout();
 				break;
@@ -162,8 +183,7 @@ class SiteView {
 <form action='?userSubmitQuestion' method='post'>
 	<label for='questionText'>Skriv fråga:</label>
 	<br>
-	<textarea rows='4' cols='50' id='questionText' name='questionText'>
-	</textarea>
+	<textarea rows='4' cols='50' id='questionText' name='questionText'></textarea>
 	
 	<br>
 	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
@@ -195,6 +215,84 @@ class SiteView {
 		return $ret;
 	}
 
+	public function showEditQuizzQuestion($questionId) {
+
+		//baserat på questionid, hämta: frågetext, alternativ, och rätt eller fel. samt frågeordning.
+		//gör så att skicka editerar befintliga rader i databasen istället för att göra nya.
+
+		$questionObj = $this->siteModel->getQuestionObject($questionId);
+
+		$orderValue = array_shift($questionObj->questionOrder);
+		$questionText = array_shift($questionObj->questionText);
+
+		$ret="
+<h2>Fråga $orderValue</h1>
+<form action='?saveEditQuestion=$questionId' method='post'>
+	<label for='questionText'>Skriv fråga:</label>
+	<br>
+	<textarea rows='4' cols='50' id='questionText' name='questionText' value=''>$questionText</textarea>
+	<br>
+	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
+	<br>
+	" . $this->getAlternativesInput($questionObj->alternatives) . "
+	<br>
+	<input type='submit' name='save' value='Uppdatera fråga'>
+</form>
+		";
+
+		return $ret;
+	}
+
+	public function getAlternativesInput($alternatives) {
+
+		$alternativeTexts = $alternatives[0];
+		$correctAnswers = $alternatives[1];
+
+		$ret="";
+
+		for($i=0; $i<5; $i++) {
+
+			$number = $i+1;
+
+			$alternativeText = $alternativeTexts[$i];
+
+			$firstSelected = "";
+			$secondSelected = "";
+
+			if($correctAnswers[$i] == 1) {
+				$firstSelected = "checked";
+			} else if ($correctAnswers[$i] == 2) {
+				$secondSelected = "checked";
+			}
+			
+			$ret .= "
+<input type='text' size='20' name='posted_alternative$number' value='$alternativeText'>
+<input type='radio' name='correctAnswer$number' value='1' $firstSelected>Rätt</input>
+<input type='radio' name='correctAnswer$number' value='2' $secondSelected>Fel</input> 
+<br>
+			";
+		}
+
+		return $ret;
+	}
+
+	public function showChoseQuizzQuestion($quizzId) {
+
+		//Hämta hur många frågor som har skapats
+		$questionArray = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
+
+		$ret = $this->pageMessage  . "<br>";
+
+		$counter = 0;
+
+		foreach ($questionArray as $key => $value) {
+			$counter++;
+			$ret .= "<a href='?userGotoEditQuizz=$value'>Fråga  . $counter</a><br>";
+		}
+
+		return $ret;
+	}
+
 
 	public function getPostedLoginCred() {
 		return new PostedLoginCred($_POST['posted_username'], $_POST['posted_password']);
@@ -213,14 +311,18 @@ class SiteView {
 		//Hämta alla användarens quizz
 
 		$userQuizzes = $this->siteModel->getUserQuizzes();
+		$userQuizzIds = $this->siteModel->getUserQuizzIds();
 
 		$ret = "";
 
 		foreach ($userQuizzes as $key => $value) {
+			$quizzId = $userQuizzIds[$key];
 			$key = $key + 1;
 
-			$ret .= "<a href='#'>" . $key . ". " . $value . "</a><br>";
+			$ret .= "<a href='?getSpecQuizzPage=$quizzId'>" . $key . ". " . $value . "</a> <a href='?deleteQuizz=$quizzId'> Ta bort</a><br>";
 		}
+
+		$ret .= "</form>";
 
 		return $ret;
 
@@ -230,17 +332,16 @@ class SiteView {
 
 		$currentUser = $this->siteModel->currentUser;
 
+		$username = $this->siteModel->getUserSessionUsername();
+
 		$ret = "
 
-<h2>Välkommen till din sida, lärare. Du är användarnamn: $currentUser->username</h2>
+<h2>Välkommen till din sida, lärare. Du är användarnamn: $username</h2>
 " . $this->pageMessage . "
 <h2>Dina skapade quizz</h2>
 " . $this->getUserQuizzHTML() . "
-<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a>
+<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a><br>
 <a href='?userLogsOut'>Logga ut</a>
-
-
-
 		";
 
 		return $ret;
@@ -277,5 +378,21 @@ class SiteView {
 
 	public function getQuestionText() {
 		return $_POST['questionText'];
+	}
+
+	public function getChosenItemId() {
+		//if (false !== strpos($_SERVER['REQUEST_URI'],'getSpecQuizzPage')) {
+			$url = $_SERVER['REQUEST_URI'];
+
+			return substr($url, strpos($url, "=") + 1);
+
+	    //	echo 'getSpecQuizzPage exists.';
+		//} else {
+		  //  echo 'No getSpecQuizzPage.';
+		//}	
+	}
+
+	public function getChosenQuestionId() {
+
 	}
 }

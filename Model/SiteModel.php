@@ -10,6 +10,8 @@ require_once("QuizzDAL.php");
 require_once("QuestionDAL.php");
 require_once("AlternativesDAL.php");
 
+require_once("Question.php");
+
 class SiteModel {
 
 	const USER_TYPE_TEACHER = 1;
@@ -23,6 +25,7 @@ class SiteModel {
 	public $currentUser;
 
 	public $quizzId;
+
 
 	//Save all quizzes here.
 	public $quizzList;
@@ -51,6 +54,8 @@ class SiteModel {
 
 			$this->currentUser = new CurrentUser($username, $userRole);
 			$this->setUserSession($userId);
+			$this->setUserSessionRole($userRole);
+			$this->setUserSessionUsername($username);
 
 			return true;
 
@@ -174,5 +179,66 @@ class SiteModel {
 		$userQuizzes = $this->quizzDAL->getAllQuizzNames($userId);
 
 		return $userQuizzes;
+	}
+
+	public function getUserQuizzIds() {
+		$userId = $this->getUserSession();
+
+		$userQuizzId = array();
+
+		$userQuizzId = $this->quizzDAL->getAllQuizzIds($userId);
+
+		return $userQuizzId;
+	}
+
+	public function getNumberOfQuestionsInQuizz($quizzId) {
+		return $this->questionDAL->getNumberOfQuestions($quizzId);
+	
+	}
+
+	public function getQuestionObject($questionId) {
+		return new Question($questionId);
+	}
+
+	public function getQuizzIdFromQuestionId($questionId) {
+		return $this->questionDAL->getQuizzId($questionId);
+	}
+
+	public function saveEditedQuestion($questionId, $questionText, $alternatives) {
+
+		$alternativeTexts = array();
+		$correctAnswers = array();
+
+		$counter = 0;
+
+		foreach ($alternatives as $key => $value) {
+			
+			$alternativeTexts[$counter] = $key;
+			$correctAnswers[$counter] = $value;
+
+			$counter++;
+		}
+
+		$this->questionDAL->editQuestion($questionId, $questionText, $alternativeTexts, $correctAnswers);
+	}
+
+	public function deleteQuizz($quizzId) {
+		$this->quizzDAL->deleteQuizz($quizzId);
+	}
+
+	public function setUserSessionRole($userRole) {
+		$_SESSION['userRole'] = $userRole;
+	}
+
+	public function getSessionUserRole() {
+		return $_SESSION['userRole'];
+	}
+
+	public function setUserSessionUsername($username) {
+		$_SESSION['sessionUsername'] = $username;
+	}
+
+	public function getUserSessionUsername() {
+		return $_SESSION['sessionUsername'];
 	}
 }

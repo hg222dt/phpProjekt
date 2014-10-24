@@ -34,7 +34,6 @@ class QuizzDAL {
 
 	public function getAllQuizzNames($userId) {
 
-		var_dump($userId);
 		$query = "SELECT Name FROM `quizzes` WHERE `User` = '$userId' ORDER BY Quizz_ID";
 		$result = mysqli_query($this->dbConnection, $query);
 
@@ -45,5 +44,24 @@ class QuizzDAL {
 
         return $storeArray;
 	}
+
+	public function getAllQuizzIds($userId) {
+
+		$query = "SELECT Quizz_Id FROM `quizzes` WHERE `User` = '$userId' ORDER BY Quizz_ID";
+		$result = mysqli_query($this->dbConnection, $query);
+
+		$storeArray = Array();
+		while ($row = mysqli_fetch_assoc($result)) {
+		    $storeArray[] =  $row['Quizz_Id'];  
+		}
+
+        return $storeArray;
+	}
+
+	public function deleteQuizz($quizzId) {
+		$query = "DELETE FROM `quizzes` WHERE `Quizz_Id` = $quizzId";
+		$result = mysqli_query($this->dbConnection, $query);
+	}
+
 
 }
