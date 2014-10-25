@@ -15,18 +15,20 @@ class AlternativesDAL {
 
 	}
 
-	public function addAlternatives($alternatives, $questionId) {
+	public function addAlternatives($alternativeTexts, $correctAnswers, $questionId) {
 
 		$counter = 0;
 
-		foreach ($alternatives as $answerText => $correctAnswer) {
-			
+		for($i=0; $i<5; $i++) {
+
+			$alternativeText = $alternativeTexts[$i];
+			$correctAnswer = $correctAnswers[$i];
 			$counter++;
 
 			//Addera rad i table quizz
-			$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Answer_alternatives
-        	                                                    (Question_Id, AnswerText, CorrectAnswer, AlternativeOrderValue)
-        	                                                    VALUES ('$questionId', '$answerText', '$correctAnswer', '$counter')");
+			$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `answer_alternatives`
+        	                                                    (`Question_Id`, `AnswerText`, `CorrectAnswer`, `AlternativeOrderValue`)
+        	                                                    VALUES ($questionId, '$alternativeText', $correctAnswer, $counter)");
 		}
 
         $this->dbConnection->close();

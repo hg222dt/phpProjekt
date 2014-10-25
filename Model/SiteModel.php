@@ -148,11 +148,13 @@ class SiteModel {
 
 		$this->questionDAL->addQuestion($quizzId, $questionText, $quizzOrderValue);
 		$this->setActiveQuestionId();
-
 	}
 
 	public function saveQuizzAlternatives($alternatives) {
-		$this->alternativesDAL->addAlternatives($alternatives, $this->getActiveQuestionId());
+
+		$alternativeTexts = $alternatives[0];
+		$correctAnswers = $alternatives[1];
+		$this->alternativesDAL->addAlternatives($alternativeTexts, $correctAnswers, $this->getActiveQuestionId());
 	}
 
 	public function setQuizzOrderValue($quizzOrderValue) {
@@ -161,6 +163,14 @@ class SiteModel {
 
 	public function getQuizzOrderValue() {
 		return $_SESSION['quizzOrderValue'];
+	}
+
+	public function setActiveQuizzRun($quizzId) {
+		$_SESSION['activeQuizzRun'] = $quizzId;
+	}
+
+	public function getActiveQuizzRun() {
+		return $_SESSION['activeQuizzRun'];
 	}
 
 	public function setUserSession($userId) {
@@ -173,22 +183,28 @@ class SiteModel {
 
 	public function getUserQuizzes() {
 		$userId = $this->getUserSession();
-
 		$userQuizzes = array();
-
-		$userQuizzes = $this->quizzDAL->getAllQuizzNames($userId);
-
+		$userQuizzes = $this->quizzDAL->getUserQuizzNames($userId);
 		return $userQuizzes;
 	}
 
 	public function getUserQuizzIds() {
 		$userId = $this->getUserSession();
-
 		$userQuizzId = array();
-
-		$userQuizzId = $this->quizzDAL->getAllQuizzIds($userId);
-
+		$userQuizzId = $this->quizzDAL->getUserQuizzIds($userId);
 		return $userQuizzId;
+	}
+
+	public function getAllQuizzes() {
+		$allQuizzes = array();
+		$allQuizzes = $this->quizzDAL->getAllQuizzNames();
+		return $allQuizzes;
+	}
+
+	public function getAllQuizzIds() {
+		$userQuizzId = array();
+		$allQuizzId = $this->quizzDAL->getAllQuizzIds();
+		return $allQuizzId;
 	}
 
 	public function getNumberOfQuestionsInQuizz($quizzId) {
@@ -205,21 +221,9 @@ class SiteModel {
 	}
 
 	public function saveEditedQuestion($questionId, $questionText, $alternatives) {
-
-		$alternativeTexts = array();
-		$correctAnswers = array();
-
-		$counter = 0;
-
-		foreach ($alternatives as $key => $value) {
-			
-			$alternativeTexts[$counter] = $key;
-			$correctAnswers[$counter] = $value;
-
-			$counter++;
-		}
-
-		$this->questionDAL->editQuestion($questionId, $questionText, $alternativeTexts, $correctAnswers);
+		$alternativeTexts = $alternatives[0];
+		$correctAnswers = $alternatives[1];
+		$this->questionDAL->editQuestion($questionId, $questionText, $alternativeTexts, $correctAnswers);	
 	}
 
 	public function deleteQuizz($quizzId) {
@@ -240,5 +244,9 @@ class SiteModel {
 
 	public function getUserSessionUsername() {
 		return $_SESSION['sessionUsername'];
+	}
+
+	public function getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId) {
+		return $this->questionDAL->getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId);
 	}
 }

@@ -14,10 +14,12 @@ class SiteView {
 	const ACTION_USER_CREATE_QUIZZ_PAGE = "createQuizzPage";
 	const ACTION_USER_CREATE_NEW_QUIZZ = "createNewQuizz";
 	const ACTION_USER_SUBMIT_QUESTION = "userSubmitQuestion";
-	const ACTION_USER_EDIT_SPEC_QUIZZ_PAGE = "getSpecQuizzPage";
+	const ACTION_USER_CHOSE_SPEC_QUIZZ_EDIT = "getSpecQuizzPage";
 	const ACTION_USER_GOTO_EDIT_QUIZZ = "userGotoEditQuizz";
 	const ACTION_USER_SAVE_EDIT_QUESTION = "saveEditQuestion";
 	const ACTION_USER_DELETE_QUIZZ = "deleteQuizz";
+	const ACTION_USER_RUN_QUIZZ = "runQuizz";
+	const ACTION_USER_RUN_QUIZZ_GOTO_NEXT = "runQuizzGoToNext";
 
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
@@ -74,8 +76,8 @@ class SiteView {
 				return SiteView::ACTION_USER_GOTO_EDIT_QUIZZ;
 				break;
 
-			case SiteView::ACTION_USER_EDIT_SPEC_QUIZZ_PAGE:
-				return SiteView::ACTION_USER_EDIT_SPEC_QUIZZ_PAGE;
+			case SiteView::ACTION_USER_CHOSE_SPEC_QUIZZ_EDIT:
+				return SiteView::ACTION_USER_CHOSE_SPEC_QUIZZ_EDIT;
 				break;
 
 			case SiteView::ACTION_USER_SAVE_EDIT_QUESTION:
@@ -86,6 +88,13 @@ class SiteView {
 				return SiteView::ACTION_USER_DELETE_QUIZZ;
 				break;
 
+			case SiteView::ACTION_USER_RUN_QUIZZ:
+				return SiteView::ACTION_USER_RUN_QUIZZ;
+				break;
+
+			case SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT:
+				return SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
+				break;
 		}
 	}
 
@@ -110,13 +119,15 @@ class SiteView {
 		<input type='submit' name='loginFormPosted' value='Log in'>
 	</fieldset>
 	<h3>Eller registrera dig <a href='?userGotoRegister'>här</a>
-</form>";
+</form>
+		";
 
 		return $ret;
 	}
 
 	public function showRegisterPage() {
-		$ret = "<h2>Skapa ett nytt konto.</h2>
+		$ret = "
+<h2>Skapa ett nytt konto.</h2>
 <form action='?userTryRegister' method='post'>
 	<fieldset>
 		<legend>Fyll i önskade användaruppgifter</legend>
@@ -136,7 +147,8 @@ class SiteView {
 		<br>
 		<input type='submit' name='loginFormPosted' value='Registrera'>
 	</fieldset>
-</form>";
+</form>
+		";
 
 		return $ret;
 	}
@@ -243,6 +255,85 @@ class SiteView {
 		return $ret;
 	}
 
+
+	public function showRunQuizz($quizzId) {
+		//Sätt användarens aktiva fråga till 1
+		$this->siteModel->setQuizzOrderValue(1);
+		//Sätt quizzId till $quizzId
+		$this->siteModel->setActiveQuizzRun($quizzId);
+		$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId(1, $quizzId);
+
+		$questionObj = $this->siteModel->getQuestionObject($questionId);
+		$questionText = array_shift($questionObj->questionText);
+		$alternatives = $questionObj->alternatives;
+
+		//returnera körvy med första quizzfrågan
+		return $this->getRunQuizzHTML($this->siteModel->getQuizzOrderValue(), $questionText, $alternatives, $questionId);
+	}
+
+	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $questionId) {
+
+		$ret= "
+<h2>Fråga $orderValue</h1>
+<form action='?runQuizzGoToNext=$questionId' method='post'>
+	<br>
+	<p>$questionText<P>
+	<br>
+	<label>Svarsalternativ:</label>
+	<br>
+	" . $this->getAlternativesLabels($alternatives) . "
+	<br>
+	<input type='submit' name='nextQuestion' value='Nästa fråga'>
+</form>
+		";
+
+		return $ret;
+	}
+
+	public function getAlternativesLabels($alternatives) {
+		$alternativeTexts = $alternatives[0];
+		$correctAnswers = $alternatives[1];
+
+		$ret="
+<table border='0'>
+		";
+
+		for($i=0; $i<5; $i++) {
+
+			$number = $i+1;
+
+			$alternativeText = $alternativeTexts[$i];
+
+			if($alternativeText != "EMPTY"){
+				
+			$firstSelected = "";
+			$secondSelected = "";
+
+			if($correctAnswers[$i] == 1) {
+				$firstSelected = "checked";
+			} else if ($correctAnswers[$i] == 2) {
+				$secondSelected = "checked";
+			}
+			
+			$ret .= "
+	<tr>
+    	<td><span>$alternativeText</span></td>
+    	<td><input type='checkbox' name='correctAnswer$number' value='1' $firstSelected/></td>
+    </tr>
+			";
+
+			}
+		}
+
+		$ret .= "
+</table>
+		";
+
+		return $ret;
+
+	}
+
+
 	public function getAlternativesInput($alternatives) {
 
 		$alternativeTexts = $alternatives[0];
@@ -277,17 +368,16 @@ class SiteView {
 	}
 
 	public function showChoseQuizzQuestion($quizzId) {
-
 		//Hämta hur många frågor som har skapats
 		$questionArray = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
-
 		$ret = $this->pageMessage  . "<br>";
-
 		$counter = 0;
 
 		foreach ($questionArray as $key => $value) {
 			$counter++;
-			$ret .= "<a href='?userGotoEditQuizz=$value'>Fråga  . $counter</a><br>";
+			$ret .= "
+<a href='?userGotoEditQuizz=$value'>Fråga  . $counter</a><br>
+			";
 		}
 
 		return $ret;
@@ -309,7 +399,6 @@ class SiteView {
 
 	public function getUserQuizzHTML() {
 		//Hämta alla användarens quizz
-
 		$userQuizzes = $this->siteModel->getUserQuizzes();
 		$userQuizzIds = $this->siteModel->getUserQuizzIds();
 
@@ -318,24 +407,46 @@ class SiteView {
 		foreach ($userQuizzes as $key => $value) {
 			$quizzId = $userQuizzIds[$key];
 			$key = $key + 1;
-
-			$ret .= "<a href='?getSpecQuizzPage=$quizzId'>" . $key . ". " . $value . "</a> <a href='?deleteQuizz=$quizzId'> Ta bort</a><br>";
+			$ret .= "
+<a href='?getSpecQuizzPage=$quizzId'>" . $key . ". " . $value . "</a> <a href='?deleteQuizz=$quizzId'> Ta bort</a><br>
+			";
 		}
 
-		$ret .= "</form>";
+		$ret .= "
+</form>
+		";
 
 		return $ret;
+	}
 
+	public function getAllQuizzForPlayHTML() {
+		//Hämta alla användarens quizz
+		$userQuizzes = $this->siteModel->getAllQuizzes();
+		$userQuizzIds = $this->siteModel->getAllQuizzIds();
+
+		$ret = "";
+
+		foreach ($userQuizzes as $key => $value) {
+			$quizzId = $userQuizzIds[$key];
+			$key = $key + 1;
+			$ret .= "
+<a href='?runQuizz=$quizzId'>" . $key . ". " . $value . "</a><br>
+			";
+		}
+
+		$ret .= "
+</form>
+		";
+
+		return $ret;
 	}
 
 	public function getTeacherLayout() {
 
 		$currentUser = $this->siteModel->currentUser;
-
 		$username = $this->siteModel->getUserSessionUsername();
 
 		$ret = "
-
 <h2>Välkommen till din sida, lärare. Du är användarnamn: $username</h2>
 " . $this->pageMessage . "
 <h2>Dina skapade quizz</h2>
@@ -351,9 +462,14 @@ class SiteView {
 
 		$currentUser = $this->siteModel->currentUser;
 
-		$ret = "<h2>Välkommen till din sida, elev. Du är användarnamn: $currentUser->username</h2>
-		" . $this->pageMessage . "
-		<a href='?userLogsOut'>Logga ut</a>";
+		$ret = "
+<h2>Välkommen till din sida, elev. Du är användarnamn: $currentUser->username</h2>
+" . $this->pageMessage . "
+
+<h2>Spela ett quizz</h2>
+" . $this->getAllQuizzForPlayHTML() . "
+<a href='?userLogsOut'>Logga ut</a>
+		";
 		
 		return $ret;
 	}
@@ -362,15 +478,46 @@ class SiteView {
 
 		$alternatives = array();
 
+		$alternativeTexts = array();
+		$alternativeCorrects = array(); 
+
 		for($i=1; $i<6; $i++) {
 
-			if($_POST['posted_alternative'. $i] != "") {
-				$alternatives[$_POST['posted_alternative' . $i]] = $_POST['correctAnswer' . $i];
+			if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])) {
+				$alternativeTexts[$i-1] = $_POST['posted_alternative' . $i];
+				$alternativeCorrects[$i-1] = $_POST['correctAnswer' . $i];
+//			} else if(isset($_POST['posted_alternative'. $i]) && !isset($_POST['correctAnswer'. $i])) {
+//				throw new Exception("svarsalternativ fattas");
+			} else {
+				$alternativeTexts[$i-1] = "EMPTY";
+				$alternativeCorrects[$i-1] = 0;
 			}
 		}
 
+		$alternatives[0] = $alternativeTexts;
+		$alternatives[1] = $alternativeCorrects;
+
 		return $alternatives;
 	}
+
+	/*
+if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])) {
+				$alternativeTexts[$i-1] = $_POST['posted_alternative' . $i];
+				$alternativeCorrects[$i-1] = $_POST['correctAnswer' . $i];
+			//} else if (!isset($_POST['posted_alternative'. $i])) {
+			//	throw new Exception("Någon rad är inte ifylld");
+			} else if ($_POST['posted_alternative'. $i] == "EMPTY") {
+				$alternativeCorrects[$i-1] = 0;
+			} else if (!$_POST['posted_alternative'. $i] == "EMPTY" && !isset($_POST['correctAnswer'. $i])) {
+				throw new Exception("Fel med ifyllning");
+
+			} else if (isset($_POST['posted_alternative'. $i]) && !isset($_POST['correctAnswer'. $i]) && $_POST['posted_alternative'. $i] != "EMPTY") {
+				throw new Exception("korrekt svar fattas någonstans.");
+			} else  {
+				$alternativeTexts[$i-1] = "EMPTY";
+				$alternativeCorrects[$i-1] = 0;
+			}
+	*/
 
 	public function getQuizzName() {
 		return $_POST['quizzName'];
@@ -381,18 +528,7 @@ class SiteView {
 	}
 
 	public function getChosenItemId() {
-		//if (false !== strpos($_SERVER['REQUEST_URI'],'getSpecQuizzPage')) {
-			$url = $_SERVER['REQUEST_URI'];
-
-			return substr($url, strpos($url, "=") + 1);
-
-	    //	echo 'getSpecQuizzPage exists.';
-		//} else {
-		  //  echo 'No getSpecQuizzPage.';
-		//}	
-	}
-
-	public function getChosenQuestionId() {
-
+		$url = $_SERVER['REQUEST_URI'];
+		return substr($url, strpos($url, "=") + 1);
 	}
 }

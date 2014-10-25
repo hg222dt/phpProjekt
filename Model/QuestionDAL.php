@@ -24,7 +24,7 @@ class QuestionDAL {
                                                             VALUES ('$quizzId', '$questionText', '$quizzOrderValue')");
 
 		$this->questionId = $this->dbConnection->insert_id;
-
+        
         $this->dbConnection->close();
 	}
 
@@ -46,6 +46,7 @@ class QuestionDAL {
 	}
 
 	public function getQuestionText($questionId) {
+
 		$query = "SELECT QuestionText FROM `questions` WHERE `Question_Id` = $questionId";
 		$result = mysqli_query($this->dbConnection, $query);
 
@@ -59,7 +60,7 @@ class QuestionDAL {
             return false;
         }
 
-		return $resultArray['QuestionText'];		
+		return $resultArray['QuestionText'];
 	}
 
 	public function getQuestionOrder($questionId) {
@@ -105,8 +106,6 @@ class QuestionDAL {
 
 		$result = mysqli_query($this->dbConnection, $query);
 		
-
-
 		for($i=0; $i<5; $i++) {
 
 			$alternativeOrderValue = $i+1;
@@ -114,19 +113,29 @@ class QuestionDAL {
 			$alternativeText = $alternativeTexts[$i];
 			$correctAnswer = $correctAnswers[$i];
 
-			var_dump($alternativeText);
-			var_dump($correctAnswer);
-
 			$query2 = "UPDATE `answer_alternatives` SET `AnswerText`='$alternativeText', `CorrectAnswer`=$correctAnswer WHERE `Question_Id`= $questionId AND `AlternativeOrderValue`= $alternativeOrderValue ";
 			$result2 = mysqli_query($this->dbConnection, $query2);
 
-			echo mysqli_errno($this->dbConnection) . ": " . mysqli_error($this->dbConnection) . "\n";
-			
+//			echo mysqli_errno($this->dbConnection) . ": " . mysqli_error($this->dbConnection) . "\n";
+/*
 			if(sizeof($alternativeTexts) == $i+1 ) {
 				break;
-			}
+			}*/
 		}
+	}
 
+	public function getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId) {
+		$query = "SELECT Question_Id FROM `questions` WHERE `QuizzOrderValue` = $orderValue AND `Quizz_Id` = '$quizzId'";
+		$result = mysqli_query($this->dbConnection, $query);
 
+		if(mysqli_num_rows($result) == 1) {
+
+            $resultArray = mysqli_fetch_assoc($result);
+
+            return (int) $resultArray['Question_Id'];
+
+        } else {
+            return false;
+        }
 	}
 }
