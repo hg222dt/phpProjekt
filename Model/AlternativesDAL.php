@@ -35,23 +35,42 @@ class AlternativesDAL {
 	}
 
 	public function getQuestionAlternatives($questionId) {
-		$query = "SELECT AnswerText, CorrectAnswer FROM `answer_alternatives` WHERE `Question_Id` = $questionId";
+		$query = "SELECT Alternative_Id, AnswerText, CorrectAnswer FROM `answer_alternatives` WHERE `Question_Id` = $questionId";
 		$result = mysqli_query($this->dbConnection, $query);
 
 		$texts = array("","","","","");
 		$corrects = array("","","","","");
+		$ids = array("","","","","");
 
 		$counter = 0;
 
 		while($row = mysqli_fetch_assoc($result)) {
 		  $texts[$counter] = $row['AnswerText'];
 		  $corrects[$counter] = $row['CorrectAnswer'];
+		  $ids[$counter] = $row['Alternative_Id'];
+
 		  $counter++;
 		}
 		
-		$storeArray = array($texts, $corrects);
+		$storeArray = array($texts, $corrects, $ids);
 
 		return $storeArray;
+	}
+
+	public function getCorrects($questionId) {
+		$query = "SELECT Alternative_Id FROM `answer_alternatives` WHERE `Question_Id` = $questionId AND `CorrectAnswer` = 1";
+		$result = mysqli_query($this->dbConnection, $query);
+
+		$ids = array("","","","","");
+
+		$counter = 0;
+
+		while($row = mysqli_fetch_assoc($result)) {
+		  $ids[$counter] = $row['Alternative_Id'];
+		  $counter++;
+		}
+		
+		return $ids;
 	}
 
 }

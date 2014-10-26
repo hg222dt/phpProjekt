@@ -27,6 +27,8 @@ class SiteView {
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
 	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
 
+	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
+
 	private $siteModel;
 	private $pageMessage;
 	private $usernamePlaceholder;
@@ -256,26 +258,30 @@ class SiteView {
 	}
 
 
-	public function showRunQuizz($quizzId) {
-		//Sätt användarens aktiva fråga till 1
-		$this->siteModel->setQuizzOrderValue(1);
-		//Sätt quizzId till $quizzId
-		$this->siteModel->setActiveQuizzRun($quizzId);
-		$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId(1, $quizzId);
+	public function showRunQuizz($questionId, $quizzId, $lastquestion) {
+
+		$this->siteModel->setActiveQuestionId($questionId);
+		//var_dump($this->siteModel->getActiveQuestionId());
 
 		$questionObj = $this->siteModel->getQuestionObject($questionId);
 		$questionText = array_shift($questionObj->questionText);
 		$alternatives = $questionObj->alternatives;
 
+		if($lastquestion == true) {
+			$buttonText = "Lämna in";
+		} else {
+			$buttonText = "Nästa fråga";
+		}
+
 		//returnera körvy med första quizzfrågan
-		return $this->getRunQuizzHTML($this->siteModel->getQuizzOrderValue(), $questionText, $alternatives, $questionId);
+		return $this->getRunQuizzHTML($this->siteModel->getQuizzOrderValue(), $questionText, $alternatives, $quizzId, $buttonText);
 	}
 
-	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $questionId) {
+	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $quizzId, $buttonText) {
 
 		$ret= "
 <h2>Fråga $orderValue</h1>
-<form action='?runQuizzGoToNext=$questionId' method='post'>
+<form action='?runQuizzGoToNext=$quizzId' method='post'>
 	<br>
 	<p>$questionText<P>
 	<br>
@@ -283,7 +289,7 @@ class SiteView {
 	<br>
 	" . $this->getAlternativesLabels($alternatives) . "
 	<br>
-	<input type='submit' name='nextQuestion' value='Nästa fråga'>
+	<input type='submit' name='nextQuestion' value='$buttonText'>
 </form>
 		";
 
@@ -293,6 +299,7 @@ class SiteView {
 	public function getAlternativesLabels($alternatives) {
 		$alternativeTexts = $alternatives[0];
 		$correctAnswers = $alternatives[1];
+		$alternativeIds = $alternatives[2];
 
 		$ret="
 <table border='0'>
@@ -303,8 +310,9 @@ class SiteView {
 			$number = $i+1;
 
 			$alternativeText = $alternativeTexts[$i];
+			$alternativeId = $alternativeIds[$i];
 
-			if($alternativeText != "EMPTY"){
+			if($alternativeText != SiteView::NAME_EMPTY_ALTERNATIVE_INPUT){
 				
 			$firstSelected = "";
 			$secondSelected = "";
@@ -318,7 +326,7 @@ class SiteView {
 			$ret .= "
 	<tr>
     	<td><span>$alternativeText</span></td>
-    	<td><input type='checkbox' name='correctAnswer$number' value='1' $firstSelected/></td>
+    	<td><input type='checkbox' name='userAnswerList[]' value='$alternativeId'/></td>
     </tr>
 			";
 
@@ -460,10 +468,10 @@ class SiteView {
 
 	public function getStudentLayout() {
 
-		$currentUser = $this->siteModel->currentUser;
+		$currentUser = $this->siteModel->getUserSessionUsername();
 
 		$ret = "
-<h2>Välkommen till din sida, elev. Du är användarnamn: $currentUser->username</h2>
+<h2>Välkommen till din sida, elev. Du är användarnamn: $currentUser</h2>
 " . $this->pageMessage . "
 
 <h2>Spela ett quizz</h2>
@@ -489,7 +497,7 @@ class SiteView {
 //			} else if(isset($_POST['posted_alternative'. $i]) && !isset($_POST['correctAnswer'. $i])) {
 //				throw new Exception("svarsalternativ fattas");
 			} else {
-				$alternativeTexts[$i-1] = "EMPTY";
+				$alternativeTexts[$i-1] = SiteView::NAME_EMPTY_ALTERNATIVE_INPUT;
 				$alternativeCorrects[$i-1] = 0;
 			}
 		}
@@ -530,5 +538,15 @@ if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])
 	public function getChosenItemId() {
 		$url = $_SERVER['REQUEST_URI'];
 		return substr($url, strpos($url, "=") + 1);
+	}
+
+	public function getAnswerArray() {
+		if(!empty($_POST['userAnswerList'])) {
+			$answerArray = array();
+    		foreach($_POST['userAnswerList'] as $answer) {
+        	    array_push($answerArray, $answer);
+    		}
+    		return $answerArray;
+		}
 	}
 }

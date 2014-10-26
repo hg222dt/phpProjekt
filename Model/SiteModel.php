@@ -9,6 +9,7 @@ require_once("../phpProjekt/Model/Quizzie.php");
 require_once("QuizzDAL.php");
 require_once("QuestionDAL.php");
 require_once("AlternativesDAL.php");
+require_once("ResultsDAL.php");
 
 require_once("Question.php");
 
@@ -21,6 +22,7 @@ class SiteModel {
 	public $quizzDAL;
 	public $questionDAL;
 	public $alternativesDAL;
+	public $resultsDAL;
 
 	public $currentUser;
 
@@ -38,6 +40,7 @@ class SiteModel {
 		$this->quizzDAL = new QuizzDAL();
 		$this->questionDAL = new QuestionDAL();
 		$this->alternativesDAL = new AlternativesDAL();
+		$this->resultsDAL = new ResultsDAL();
 
 	}
 
@@ -129,16 +132,20 @@ class SiteModel {
 		$_SESSION['ActiveQuizzId'] = $this->quizzDAL->getLatestQuizzId();
 	}
 
-	public function setActiveQuestionId() {
-		$_SESSION['ActiveQuestionId'] = $this->questionDAL->getLatestQuizzId();
+	public function setActiveQuestionId($questionId) {
+		$_SESSION['ActiveQuestionId'] = $questionId;
 	}
 
-	public function getActiveQuizzId() {
-		return $_SESSION['ActiveQuizzId'];
+	public function setActiveQuestionIdWithLatest() {
+		$_SESSION['ActiveQuestionId'] = $this->questionDAL->getLatestQuestionId();
 	}
 
 	public function getActiveQuestionId() {
 		return $_SESSION['ActiveQuestionId'];
+	}
+
+	public function getActiveQuizzId() {
+		return $_SESSION['ActiveQuizzId'];
 	}
 
 	public function saveQuizzQuestion($questionText) {
@@ -147,7 +154,7 @@ class SiteModel {
 		$quizzOrderValue = $this->getQuizzOrderValue();
 
 		$this->questionDAL->addQuestion($quizzId, $questionText, $quizzOrderValue);
-		$this->setActiveQuestionId();
+		$this->setActiveQuestionIdWithLatest();
 	}
 
 	public function saveQuizzAlternatives($alternatives) {
@@ -248,5 +255,61 @@ class SiteModel {
 
 	public function getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId) {
 		return $this->questionDAL->getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId);
+	}
+
+	public function saveQuestionAnswer($answerArray, $questionId) {
+
+		//Hitta vad det rätta svaret på frågan är
+
+		$isUserCorrect = 2;
+		$answerIsCorrect = true;
+		$correctFound = false;
+
+		$answerIsInCorrectArray = false;
+
+		$userFailedTotally = false;
+
+		$correctArray = $this->alternativesDAL->getCorrects($questionId);
+
+		$falseFound = false;
+
+		foreach ($answerArray as $key2 => $answerValue) {
+
+			if(!$this->doesUserInputMatchAnyCorrectValue($answerValue, $correctArray)) {
+				$_SESSION['correctAnswerQuestion$questionId'] = 2;
+				$falseFound = true;
+				$isUserCorrect = 2;
+			}
+		}	
+
+		if($falseFound == false) {
+
+			//Skicka true till dal
+			$isUserCorrect = 1;
+
+			$_SESSION['correctAnswerQuestion$questionId'] = 1;
+		}
+
+		//Skicka true till dal
+
+		$quizzId = $this->getActiveQuizzRun();
+		$userId = $this->getUserSession();
+
+		$this->resultsDAL->addResult((int) $isUserCorrect, (int) $questionId, (int) $quizzId, (int) $userId);
+	}
+
+	public function doesUserInputMatchAnyCorrectValue($answerValue, $correctArray) {
+		foreach ($correctArray as $key => $correctValue) {
+			if((int) $correctValue == (int) $answerValue) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function sumUpQuizzResult($questionIdsInQuizz) {
+		for($i=0; $i<2; $i++) {
+			$questionId = $questionIdsInQuizz[$i];
+		}
 	}
 }

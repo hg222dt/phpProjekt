@@ -20,15 +20,15 @@ class QuestionDAL {
 	public function addQuestion($quizzId, $questionText, $quizzOrderValue) {
 		//Addera rad i table quizz
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Questions
-                                                            (Quizz_Id, QuestionText, QuizzOrderValue)
-                                                            VALUES ('$quizzId', '$questionText', '$quizzOrderValue')");
+                                                            (`Quizz_Id`, `QuestionText`, `QuizzOrderValue`)
+                                                            VALUES ($quizzId, '$questionText', $quizzOrderValue)");
 
 		$this->questionId = $this->dbConnection->insert_id;
         
         $this->dbConnection->close();
 	}
 
-	public function getLatestQuizzId() {
+	public function getLatestQuestionId() {
 		return $this->questionId;
 	}
 
