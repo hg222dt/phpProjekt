@@ -1,15 +1,16 @@
 <?php
 
-require_once("../phpProjekt/Model/UserDAL.php");
-require_once("../phpProjekt/View/PostedLoginCred.php");
-require_once("../phpProjekt/Model/CurrentUser.php");
-require_once("../phpProjekt/Model/Quizzie.php");
+require_once("./Model/UserDAL.php");
+require_once("./View/PostedLoginCred.php");
+require_once("./Model/CurrentUser.php");
+require_once("./Model/Quizzie.php");
 
 
 require_once("QuizzDAL.php");
 require_once("QuestionDAL.php");
 require_once("AlternativesDAL.php");
 require_once("ResultsDAL.php");
+require_once("FinishedDAL.php");
 
 require_once("Question.php");
 
@@ -23,6 +24,7 @@ class SiteModel {
 	public $questionDAL;
 	public $alternativesDAL;
 	public $resultsDAL;
+	public $finishedDAL;
 
 	public $currentUser;
 
@@ -41,7 +43,7 @@ class SiteModel {
 		$this->questionDAL = new QuestionDAL();
 		$this->alternativesDAL = new AlternativesDAL();
 		$this->resultsDAL = new ResultsDAL();
-
+		$this->finishedDAL = new FinishedDAL();
 	}
 
 	public function tryLogin($loginCred) {
@@ -311,5 +313,47 @@ class SiteModel {
 		for($i=0; $i<2; $i++) {
 			$questionId = $questionIdsInQuizz[$i];
 		}
+	}
+
+	public function saveFinishedResult($userId, $quizzId) {
+
+		//Get all results from users quizz questions
+		//Calculate result for this quizz
+		//save user result to database
+
+		$results = $this->resultsDAL->getResultsForUserAndQuizz($userId, $quizzId);
+
+		$corrects = 0;
+		$wrongs = 0;
+
+		foreach ($results as $key => $value) {
+			if($value == 1) {
+				$corrects++;
+			} else {
+				$wrongs++;
+			}
+		}
+
+		$resultInPercentage = $corrects / ($corrects + $wrongs);
+
+		$this->finishedDAL->addFinishedQuizz($resultInPercentage, $quizzId, $userId);
+
+	}
+
+	public function getQuizzResultsUser() {
+		$userId = $this->getUserSession();
+
+		$quizzResults = $this->finishedDAL->getAllFinishedResultsUser((int) $userId);
+
+		//Convert results to percentage
+		foreach ($quizzResults as $key => $value) {
+			$value = $value * 100;
+			$roundedValue = round($value);
+			$quizzResults[$key] = $roundedValue;
+
+		}
+
+		return $quizzResults;
+
 	}
 }

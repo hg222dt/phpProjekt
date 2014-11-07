@@ -1,7 +1,7 @@
 <?php
 
-require_once("../phpProjekt/View/SiteView.php");
-require_once("../phpProjekt/Model/SiteModel.php");
+require_once("./View/SiteView.php");
+require_once("./Model/SiteModel.php");
 require_once("RegisterController.php");
 
 class LoginController {
@@ -111,45 +111,26 @@ class LoginController {
 
 				case SiteView::ACTION_USER_RUN_QUIZZ:
 					$quizzId = $this->siteView->getChosenItemId();
-					//Sätt användarens aktiva fråga till 1
 					$this->siteModel->setQuizzOrderValue(1);
-					//Sätt quizzId till $getQuizzIdFromQuestionId
 					$this->siteModel->setActiveQuizzRun($quizzId);
 					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId(1, $quizzId);
-
 					return $this->siteView->showRunQuizz($questionId, $quizzId, false);
 					break;
 
 				case SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT:
-
 					$answerArray = $this->siteView->getAnswerArray();
-
-
-					//var_dump($this->siteModel->getActiveQuestionId());
-
-					//save quizz answer
 					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
-
-					//show next quizz question
 					$quizzId = $this->siteView->getChosenItemId();
-
-					//Hämta antal frågor i quizz
 					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
-
 					$questionAmount = sizeof($questionIdsInQuizz);
-
 					$newOrderValue = $this->siteModel->getQuizzOrderValue() + 1;
-
-					//Sätt användarens aktiva fråga till 1
 					$this->siteModel->setQuizzOrderValue($newOrderValue);
-
-					//Sätt quizzId till $getQuizzIdFromQuestionId
-					$this->siteModel->setActiveQuizzRun($quizzId);
-					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($this->siteModel->getQuizzOrderValue(), $quizzId);
+					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($newOrderValue, $quizzId);
 
 					if($questionAmount < $newOrderValue) {
-						//Gå till huvudmenyn
 						$this->siteModel->sumUpQuizzResult($questionIdsInQuizz);
+						//Spara quizz-resultat i db
+						$this->siteModel->saveFinishedResult($this->siteModel->getUserSession(), $quizzId);
 						return $this->siteView->showLoggedInPage();
 					} else if($questionAmount == $newOrderValue) {
 						return $this->siteView->showRunQuizz($questionId, $quizzId, true);

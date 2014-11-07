@@ -7,7 +7,6 @@
 
 	session_start();
 
-
 	$loginController = new LoginController();
 
 	$htmlBody = $loginController->doControll();

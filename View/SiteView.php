@@ -1,8 +1,8 @@
 <?php
 
-require_once("../phpProjekt/Model/SiteModel.php");
-require_once("../phpProjekt/View/PostedLoginCred.php");
-require_once("../phpProjekt/View/PostedRegCred.php");
+require_once("./Model/SiteModel.php");
+require_once("./View/PostedLoginCred.php");
+require_once("./View/PostedRegCred.php");
 
 class SiteView {
 
@@ -266,6 +266,8 @@ class SiteView {
 		$questionObj = $this->siteModel->getQuestionObject($questionId);
 		$questionText = array_shift($questionObj->questionText);
 		$alternatives = $questionObj->alternatives;
+		$questionOrderArr = $questionObj->questionOrder;
+		$questionOrder = $questionOrderArr['QuizzOrderValue'];
 
 		if($lastquestion == true) {
 			$buttonText = "Lämna in";
@@ -273,8 +275,7 @@ class SiteView {
 			$buttonText = "Nästa fråga";
 		}
 
-		//returnera körvy med första quizzfrågan
-		return $this->getRunQuizzHTML($this->siteModel->getQuizzOrderValue(), $questionText, $alternatives, $quizzId, $buttonText);
+		return $this->getRunQuizzHTML($questionOrder, $questionText, $alternatives, $quizzId, $buttonText);
 	}
 
 	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $quizzId, $buttonText) {
@@ -432,13 +433,31 @@ class SiteView {
 		$userQuizzes = $this->siteModel->getAllQuizzes();
 		$userQuizzIds = $this->siteModel->getAllQuizzIds();
 
+		$quizzResults = $this->siteModel->getQuizzResultsUser();
+
 		$ret = "";
 
 		foreach ($userQuizzes as $key => $value) {
+			
 			$quizzId = $userQuizzIds[$key];
+			$resultString = "";
+
+			foreach ($quizzResults as $key2 => $resultQuizz) {
+				if($key2 == $quizzId) {
+					$resultString = "<span>$resultQuizz %</span>";
+				}	
+			}
+
 			$key = $key + 1;
 			$ret .= "
-<a href='?runQuizz=$quizzId'>" . $key . ". " . $value . "</a><br>
+<tr>
+	<td>
+		<a href='?runQuizz=$quizzId'>" . $key . ". " . $value . "</a>
+	</td>
+	<td>
+		$resultString
+	</td>
+</tr>
 			";
 		}
 
@@ -475,7 +494,13 @@ class SiteView {
 " . $this->pageMessage . "
 
 <h2>Spela ett quizz</h2>
+<table>
+	<tr>
+		<th>Quizz</th>
+		<th>Resultat</th>
+	</tr>
 " . $this->getAllQuizzForPlayHTML() . "
+</table>
 <a href='?userLogsOut'>Logga ut</a>
 		";
 		

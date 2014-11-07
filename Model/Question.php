@@ -1,7 +1,7 @@
 <?php
 
 require_once("QuestionDAL.php");
-require_once("alternativesDAL.php");
+require_once("AlternativesDAL.php");
 
 class Question {
 	public $questionText;
@@ -18,5 +18,6 @@ class Question {
 		$this->questionText = $this->questionDAL->getQuestionText($questionId);
 		$this->questionOrder = $this->questionDAL->getQuestionORder($questionId);
 		$this->alternatives = $this->alternativesDAL->getQuestionAlternatives($questionId);
+
 	}
 }

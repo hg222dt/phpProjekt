@@ -8,11 +8,10 @@ class QuestionDAL {
 
 	public function __construct() {
 
-		$this->dbConnection = mysqli_connect("localhost", "root", "", "quizzgamez");
+		$this->dbConnection = mysqli_connect("localhost", "root", "root", "quizzgamez");
 
         if(!$this->dbConnection) {
-
-            die('Connectionfailure: ' . mysql_error());
+            die('Connectionfailure1: ' . mysql_error());
         }
 
 	}
