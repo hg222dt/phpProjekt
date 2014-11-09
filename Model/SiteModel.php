@@ -37,7 +37,6 @@ class SiteModel {
 
 
 	public function __construct() {
-		
 		$this->userDAL = new UserDAL();
 		$this->quizzDAL = new QuizzDAL();
 		$this->questionDAL = new QuestionDAL();
@@ -179,7 +178,6 @@ class SiteModel {
 	}
 
 	public function saveQuizzAlternatives($alternatives) {
-
 		$alternativeTexts = $alternatives[0];
 		$correctAnswers = $alternatives[1];
 		$this->alternativesDAL->addAlternatives($alternativeTexts, $correctAnswers, $this->getActiveQuestionId());
@@ -336,10 +334,6 @@ class SiteModel {
 
 	public function saveFinishedResult($userId, $quizzId) {
 
-		//Get all results from users quizz questions
-		//Calculate result for this quizz
-		//save user result to database
-
 		$results = $this->resultsDAL->getResultsForUserAndQuizz($userId, $quizzId);
 
 		$corrects = 0;
@@ -354,9 +348,8 @@ class SiteModel {
 		}
 
 		$resultInPercentage = $corrects / ($corrects + $wrongs);
-
 		$this->finishedDAL->addFinishedQuizz($resultInPercentage, $quizzId, $userId);
-
+		return $resultInPercentage;
 	}
 
 	public function getQuizzResultsUser() {

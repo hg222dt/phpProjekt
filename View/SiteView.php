@@ -30,7 +30,7 @@ class SiteView {
 	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
 	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
-	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is played.";
+	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is already played.";
 	const MESSAGE_FORM_WAS_NOT_CORRECT = "The form was not correctly filled in.";
 
 	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
@@ -113,6 +113,13 @@ class SiteView {
 	//Sets a message on top of the rendered page
 	public function setMessage($message) {
 		$this->pageMessage = '<p>' . $message . '</p>';
+	}
+
+	public function setResultMessage($resultDecimal) {
+
+		$resultInPercentage = round($resultDecimal * 100);
+
+		$this->pageMessage = '<p>Du hade ' . $resultInPercentage . ' % rätt på quizzet!</p>';
 	}
 
 	public function showLobby() {

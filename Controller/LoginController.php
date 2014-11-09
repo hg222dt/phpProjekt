@@ -159,8 +159,8 @@ class LoginController {
 
 					if($questionAmount < $newOrderValue) {
 						$this->siteModel->sumUpQuizzResult($questionIdsInQuizz);
-						//Spara quizz-resultat i db
-						$this->siteModel->saveFinishedResult($this->siteModel->getUserSession(), $quizzId);
+						$resultDecimal = $this->siteModel->saveFinishedResult($this->siteModel->getUserSession(), $quizzId);
+						$this->siteView->setResultMessage($resultDecimal);
 						return $this->siteView->showLoggedInPage();
 					} else if($questionAmount == $newOrderValue) {
 						return $this->siteView->showRunQuizz($questionId, $quizzId, true);
