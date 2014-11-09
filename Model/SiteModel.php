@@ -61,6 +61,7 @@ class SiteModel {
 			$this->setUserSession($userId);
 			$this->setUserSessionRole($userRole);
 			$this->setUserSessionUsername($username);
+			$this->setUserLoggedInState(true);
 
 			return true;
 
@@ -140,6 +141,24 @@ class SiteModel {
 
 	public function setActiveQuestionIdWithLatest() {
 		$_SESSION['ActiveQuestionId'] = $this->questionDAL->getLatestQuestionId();
+	}
+
+	public function setUserLoggedInState($loggedInState) {
+		$_SESSION['UserLoggedIn'] = $loggedInState;
+	}
+
+	public function setUserLoggedOut() {
+		$this->setUserSession(null);
+		$this->setUserSessionRole(null);
+		$this->setUserSessionUsername(null);
+		$this->setUserLoggedInState(false);
+	}
+
+	public function isUserLoggedIn() {
+		if($_SESSION['UserLoggedIn'] == true) {
+			return true;
+		}
+		return false;
 	}
 
 	public function getActiveQuestionId() {
@@ -354,6 +373,45 @@ class SiteModel {
 		}
 
 		return $quizzResults;
+	}
 
+	public function getQuizzResultsSpecUser($userId) {
+		$quizzResults = $this->finishedDAL->getAllFinishedResultsUser((int) $userId);
+
+		var_dump($quizzResults);
+
+		//Convert results to percentage
+		foreach ($quizzResults as $key => $value) {
+			$value = $value * 100;
+			$roundedValue = round($value);
+			$quizzResults[$key] = $roundedValue;
+
+		}
+
+		return $quizzResults;
+	}
+
+	public function isQuizzDone($quizzId) {
+		$userId = $this->getUserSession();
+		$quizzResults = $this->finishedDAL->getAllFinishedQuizzes((int) $userId);
+
+		foreach ($quizzResults as $key => $value) {
+			if($value == $quizzId) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function getAmountDoneQuizzes() {
+		return $this->finishedDAL->getAmountDoneQuizzes();
+	}
+
+	public function getAverageResultsQuizzes() {
+		return $this->finishedDAL->getAverageResultsQuizzes();
+	}
+
+	public function getStudentsNames() {
+		return $this->userDAL->getStudentsNames();
 	}
 }

@@ -24,7 +24,11 @@ class LoginController {
 					break;
 
 				case SiteView::ACTION_USER_LOGS_IN_DEFAULT:
-					//Verify LoginCredentials
+					
+					if($this->siteModel->isUserLoggedIn()) {
+						return $this->siteView->showLoggedInPage();
+					}
+					
 					if($this->siteModel->tryLogin($this->siteView->getPostedLoginCred())){
 						$this->siteView->setMessage(SiteView::MESSAGE_USER_LOGGED_IN);
 						return $this->siteView->showLoggedInPage();
@@ -35,6 +39,7 @@ class LoginController {
 					break;
 
 				case SiteView::ACTION_USER_LOGS_OUT:
+					$this->siteModel->setUserLoggedOut();
 					$this->siteView->setMessage(SiteView::MESSAGE_USER_LOGGED_OUT);
 					return $this->siteView->showLobby();
 					break;
@@ -111,6 +116,13 @@ class LoginController {
 
 				case SiteView::ACTION_USER_RUN_QUIZZ:
 					$quizzId = $this->siteView->getChosenItemId();
+
+					//Kolla så att quizzet inte finns med i finishedquizzes
+					if($this->siteModel->isQuizzDone((int) $quizzId)){
+						$this->siteView->setMessage(SiteView::MESSAGE_QUIZZ_ALLREADY_PLAYED);
+						return $this->siteView->showLoggedInPage();
+					} 
+
 					$this->siteModel->setQuizzOrderValue(1);
 					$this->siteModel->setActiveQuizzRun($quizzId);
 					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId(1, $quizzId);
@@ -139,7 +151,16 @@ class LoginController {
 					}
 					break;
 
+				case SiteView::ACTION_TEACHER_CHOSES_STUDENT:
+					$chosenUserId = $this->siteView->getChosenStudent();
+					$this->siteView->setStudentResultsHTML($chosenUserId);
+					return $this->siteView->showLoggedInPage();
+					break;
+
 				default:
+					if($this->siteModel->isUserLoggedIn()) {
+						return $this->siteView->showLoggedInPage();
+					}
 					return $this->siteView->showLobby();
 					break;
 			}	

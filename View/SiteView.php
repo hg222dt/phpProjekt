@@ -20,12 +20,14 @@ class SiteView {
 	const ACTION_USER_DELETE_QUIZZ = "deleteQuizz";
 	const ACTION_USER_RUN_QUIZZ = "runQuizz";
 	const ACTION_USER_RUN_QUIZZ_GOTO_NEXT = "runQuizzGoToNext";
+	const ACTION_TEACHER_CHOSES_STUDENT = "teacherChosesUniqueStudent";
 
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
 	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
 	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
+	CONST MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is played.";
 
 	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
 
@@ -97,6 +99,10 @@ class SiteView {
 			case SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT:
 				return SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
 				break;
+
+			case SiteView::ACTION_TEACHER_CHOSES_STUDENT:
+				return SiteView::ACTION_TEACHER_CHOSES_STUDENT;
+				break;
 		}
 	}
 
@@ -167,7 +173,7 @@ class SiteView {
 				break;
 
 			default:
-				throw new Exeption("Userrole is invalid.");
+				throw new Exception("Userrole is invalid.");
 				break;
 		}
 	}
@@ -410,14 +416,46 @@ class SiteView {
 		//Hämta alla användarens quizz
 		$userQuizzes = $this->siteModel->getUserQuizzes();
 		$userQuizzIds = $this->siteModel->getUserQuizzIds();
+		$amountDones = $this->siteModel->getAmountDoneQuizzes();
+		$averageResults = $this->siteModel->getAverageResultsQuizzes();
 
 		$ret = "";
 
 		foreach ($userQuizzes as $key => $value) {
 			$quizzId = $userQuizzIds[$key];
+
+
+			$amountDone = "";
+			$averageScore = "";
+
+			foreach ($amountDones as $key2 => $value2) {
+				if($key2 == $quizzId) {
+					$amountDone = "<span>$value2 %</span>";
+				}
+			}
+
+			foreach ($averageResults as $key3 => $value3) {
+				if($key3 == $quizzId) {
+					$averageScore = "<span>$value3 %</span>";
+				}
+			}
+			
 			$key = $key + 1;
 			$ret .= "
-<a href='?getSpecQuizzPage=$quizzId'>" . $key . ". " . $value . "</a> <a href='?deleteQuizz=$quizzId'> Ta bort</a><br>
+<tr>
+	<td>
+		<span>" . $key . " . </span><a href='?getSpecQuizzPage=$quizzId'>" . $value . "
+	</td>
+	<td>
+		</a> <a href='?deleteQuizz=$quizzId'> Ta bort</a>
+	</td>
+	<td>
+		$amountDone
+	</td>
+	<td>
+		$averageScore
+	</td>
+</tr>
 			";
 		}
 
@@ -468,8 +506,52 @@ class SiteView {
 		return $ret;
 	}
 
-	public function getTeacherLayout() {
+	public function getStudentDataHTML($userId) {
+		$userQuizzes = $this->siteModel->getAllQuizzes();
+		$userQuizzIds = $this->siteModel->getAllQuizzIds();
 
+		$quizzResults = $this->siteModel->getQuizzResultsSpecUser($userId);
+
+		$ret = "";
+
+		foreach ($userQuizzes as $key => $value) {
+			
+			$quizzId = $userQuizzIds[$key];
+			$resultString = "";
+
+			foreach ($quizzResults as $key2 => $resultQuizz) {
+				if($key2 == $quizzId) {
+					$resultString = "<span>$resultQuizz %</span>";
+				}	
+			}
+
+			$key = $key + 1;
+			$ret .= "
+<tr>
+	<td>
+		" . $key . ". " . $value . "
+	</td>
+	<td>
+		$resultString
+	</td>
+</tr>
+			";
+		}
+
+		$ret .= "
+</form>
+		";
+
+		return $ret;
+	}
+
+	private $studentResultsHTML = "<table>";
+
+	public function setStudentResultsHTML($chosenUserId) {
+		$this->studentResultsHTML .= $this->getStudentDataHTML($chosenUserId) . "</table>";
+	}
+
+	public function getTeacherLayout() {
 		$currentUser = $this->siteModel->currentUser;
 		$username = $this->siteModel->getUserSessionUsername();
 
@@ -477,7 +559,37 @@ class SiteView {
 <h2>Välkommen till din sida, lärare. Du är användarnamn: $username</h2>
 " . $this->pageMessage . "
 <h2>Dina skapade quizz</h2>
+<table border='1'>
+	<tr>
+		<th>
+		Quizz
+		</th>
+		<th> 
+		</th>
+		<th>
+		Andel inlämningar
+		</th>
+		<th>
+		Snittresultat
+		</th>
+	</tr>
 " . $this->getUserQuizzHTML() . "
+</table>
+
+<form action='?teacherChosesUniqueStudent' method='post'>
+		<label>Chose student</label>
+		<br>
+		<select name='uniqueStudent'>
+		" . $this->getStudentList() . "
+		</select>
+		<input type='submit' name='studentChosen' value='Se elev'>
+</form>
+
+" . $this->studentResultsHTML . "
+
+<br>
+
+<br>
 <a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a><br>
 <a href='?userLogsOut'>Logga ut</a>
 		";
@@ -507,6 +619,20 @@ class SiteView {
 		return $ret;
 	}
 
+	public function getStudentList() {
+
+		$students = $this->siteModel->getStudentsNames();
+
+		$ret = "";
+
+		foreach ($students as $key => $value) {
+			$ret .= "<option value='$key'>$value</option>";
+		}
+
+		return $ret;
+	}
+
+
 	public function getAlternatives() {
 
 		$alternatives = array();
@@ -519,8 +645,6 @@ class SiteView {
 			if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])) {
 				$alternativeTexts[$i-1] = $_POST['posted_alternative' . $i];
 				$alternativeCorrects[$i-1] = $_POST['correctAnswer' . $i];
-//			} else if(isset($_POST['posted_alternative'. $i]) && !isset($_POST['correctAnswer'. $i])) {
-//				throw new Exception("svarsalternativ fattas");
 			} else {
 				$alternativeTexts[$i-1] = SiteView::NAME_EMPTY_ALTERNATIVE_INPUT;
 				$alternativeCorrects[$i-1] = 0;
@@ -532,25 +656,6 @@ class SiteView {
 
 		return $alternatives;
 	}
-
-	/*
-if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])) {
-				$alternativeTexts[$i-1] = $_POST['posted_alternative' . $i];
-				$alternativeCorrects[$i-1] = $_POST['correctAnswer' . $i];
-			//} else if (!isset($_POST['posted_alternative'. $i])) {
-			//	throw new Exception("Någon rad är inte ifylld");
-			} else if ($_POST['posted_alternative'. $i] == "EMPTY") {
-				$alternativeCorrects[$i-1] = 0;
-			} else if (!$_POST['posted_alternative'. $i] == "EMPTY" && !isset($_POST['correctAnswer'. $i])) {
-				throw new Exception("Fel med ifyllning");
-
-			} else if (isset($_POST['posted_alternative'. $i]) && !isset($_POST['correctAnswer'. $i]) && $_POST['posted_alternative'. $i] != "EMPTY") {
-				throw new Exception("korrekt svar fattas någonstans.");
-			} else  {
-				$alternativeTexts[$i-1] = "EMPTY";
-				$alternativeCorrects[$i-1] = 0;
-			}
-	*/
 
 	public function getQuizzName() {
 		return $_POST['quizzName'];
@@ -573,5 +678,9 @@ if(isset($_POST['posted_alternative'. $i]) && isset($_POST['correctAnswer'. $i])
     		}
     		return $answerArray;
 		}
+	}
+
+	public function getChosenStudent() {
+		return $_POST['uniqueStudent'];
 	}
 }

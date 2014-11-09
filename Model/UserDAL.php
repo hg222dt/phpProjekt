@@ -74,85 +74,19 @@ class UserDAL {
         }
     }
 
+    public function getStudentsNames() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-    public function setMemberCredentialsInDB($firstname, $lastname, $personalnumber) {
-
-        $sqlQuery = mysqli_query($this->dbConnection, "SELECT SocialSecurityNO
-                                                        FROM register
-                                                        WHERE SocialSecurityNO = '$personalnumber'");
-
-        if (mysqli_num_rows($sqlQuery) > 0) {
-
-            return false;
-
-        } else {
-
-            $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO register
-                                                            (firstName, lastName, socialSecurityNO)
-                                                            VALUES ('$firstname', '$lastname', '$personalnumber')");
-
-            $this->dbConnection->close();
-
-           if($sqlInsert) {
-
-                return true;
-
-            } else {
-
-                return false;
-            } 
-        }
-    }
-
-    public function getMemberByPersonalNumberFromDB($personalnumber) {
-
-        $result = mysqli_query($this->dbConnection, "SELECT *
-                                                      FROM register
-                                                      WHERE socialSecurityNumber = '$personalnumber'");
+        $query = "SELECT `User_Id`, `Username` FROM `users` WHERE `Role` = 2";
+        $result = mysqli_query($this->dbConnection, $query);
 
         $this->dbConnection->close();
 
-        if(mysqli_num_rows($result) == 1) {
- 
-            return true;
+        $storeArray = array();
 
-        } else {
-
-            return false;
-
-        }
-    }
-
-    public function getMemberCredentialsFromDB($firstName, $lastName, $personalnumber) {
-
-        $sqlQuery = mysqli_query($this->dbConnection, "SELECT memberID, firstName
-                                                      , lastName, socialSecurityNumber
-                                                      FROM register
-                                                      WHERE socialSecurityNumber = '$personalnumber'");
-
-        $this->dbConnection->close();
-
-        if(mysqli_num_rows($sqlQuery) == 1) {
- 
-            return true;
-
-        } else {
-
-            return false;
-
+        while($row = mysqli_fetch_assoc($result)) {
+            $storeArray[$row['User_Id']] = $row['Username'];
         }
 
+        return $storeArray;
     }
 }
