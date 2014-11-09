@@ -77,14 +77,31 @@ class LoginController {
 				case SiteView::ACTION_USER_SUBMIT_QUESTION:
 					//spara fråga i aktivt quizz
 //					try {
-						$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
-						$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
-						$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
+						if(isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION])) {
+							if($this->siteView->isFormCorrectlyFilledIn()) {
+								$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
+								$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
+								$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
+							} else {
+								$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
+								return $this->siteView->showCreateQuizzQuestion();
+							}
+							return $this->siteView->showCreateQuizzQuestion();
+						} else if (isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION_FINISH])) {
+							if($this->siteView->isFormCorrectlyFilledIn()) {
+								$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
+								$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
+							} else {
+								$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
+								return $this->siteView->showCreateQuizzQuestion();
+							}
+							return $this->siteView->showLoggedInPage();
+						}
 //					} catch (Exception $e) {
 //						var_dump($e->getMessage());
 //					}
 					//Visa ny fråga
-					return $this->siteView->showCreateQuizzQuestion();
+					
 					break;
 
 				case SiteView::ACTION_USER_CHOSE_SPEC_QUIZZ_EDIT:
@@ -105,7 +122,8 @@ class LoginController {
 					$this->siteModel->saveEditedQuestion($questionId, $this->siteView->getQuestionText(), $this->siteView->getAlternatives());
 					$quizzId = $this->siteModel->getQuizzIdFromQuestionId($questionId);
 					$this->siteView->setMessage(SiteView::MESSAGE_EDIT_SUCCESS);
-					return $this->siteView->showChoseQuizzQuestion(array_shift($quizzId));
+//					return $this->siteView->showChoseQuizzQuestion(array_shift($quizzId));
+					return $this->siteView->showLoggedInPage();
 					break;
 
 				case SiteView::ACTION_USER_DELETE_QUIZZ:

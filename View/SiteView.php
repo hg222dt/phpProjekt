@@ -22,12 +22,16 @@ class SiteView {
 	const ACTION_USER_RUN_QUIZZ_GOTO_NEXT = "runQuizzGoToNext";
 	const ACTION_TEACHER_CHOSES_STUDENT = "teacherChosesUniqueStudent";
 
+	const ACTION_USER_SAVE_QUESTION = "saveQuestion";
+	const ACTION_USER_SAVE_QUESTION_FINISH = "saveAndQuit";
+
 	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
 	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
 	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
 	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
-	CONST MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is played.";
+	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is played.";
+	const MESSAGE_FORM_WAS_NOT_CORRECT = "The form was not correctly filled in.";
 
 	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
 
@@ -200,11 +204,11 @@ class SiteView {
 
 		$ret="
 <h2>Fråga $questionId</h1>
+" . $this->pageMessage . "
 <form action='?userSubmitQuestion' method='post'>
 	<label for='questionText'>Skriv fråga:</label>
 	<br>
 	<textarea rows='4' cols='50' id='questionText' name='questionText'></textarea>
-	
 	<br>
 	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
 	<br>
@@ -229,6 +233,8 @@ class SiteView {
 	<input type='radio' name='correctAnswer5' value='2'>Fel</input>
 	<br>
 	<input type='submit' name='saveQuestion' value='Spara fråga'>
+	<br>
+	<input type='submit' name='saveAndQuit' value='Spara och avsluta'>
 </form>
 		";
 
@@ -662,6 +668,7 @@ class SiteView {
 	}
 
 	public function getQuestionText() {
+
 		return $_POST['questionText'];
 	}
 
@@ -682,5 +689,12 @@ class SiteView {
 
 	public function getChosenStudent() {
 		return $_POST['uniqueStudent'];
+	}
+
+	public function isFormCorrectlyFilledIn() {
+		if($this->getQuestionText() == null) {
+			return false;
+		}
+		return true;
 	}
 }

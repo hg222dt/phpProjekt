@@ -55,7 +55,7 @@ class SiteModel {
 		$userRole = $resultArray['Role'];
 		$userId = $resultArray['User_Id'];
 
-		if(strcmp($password, $loginCred->password) == 0) {
+		if(strcmp($password, md5($loginCred->password)) == 0 && $username != null) {
 
 			$this->currentUser = new CurrentUser($username, $userRole);
 			$this->setUserSession($userId);
@@ -377,8 +377,6 @@ class SiteModel {
 
 	public function getQuizzResultsSpecUser($userId) {
 		$quizzResults = $this->finishedDAL->getAllFinishedResultsUser((int) $userId);
-
-		var_dump($quizzResults);
 
 		//Convert results to percentage
 		foreach ($quizzResults as $key => $value) {

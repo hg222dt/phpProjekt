@@ -14,15 +14,6 @@ class UserDAL {
         }
     }
 
-    public function doesUsernameExist() {
-
-    }
-
-    public function addUser() {
-
-    }
-
-
     public function getUser($username) {
 
         if (mysqli_connect_errno())
@@ -44,16 +35,15 @@ class UserDAL {
         }
 
         $this->dbConnection->close();
-
     }
-
-
 
     public function addMember($postedRegCred) {
 
         $username = $postedRegCred->username;
         $password = $postedRegCred->password;
         $userRole = $postedRegCred->userRole;
+
+        $encryptedPassword = md5($password);
 
         $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
 
@@ -67,7 +57,7 @@ class UserDAL {
 
             $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Users
                                                             (Username, Password, Role)
-                                                            VALUES ('$username', '$password', $userRole)");
+                                                            VALUES ('$username', '$encryptedPassword', $userRole)");
 
             $this->dbConnection->close();
 
