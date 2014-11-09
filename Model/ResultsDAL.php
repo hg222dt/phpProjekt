@@ -35,9 +35,8 @@ class ResultsDAL {
 			while ($row = mysqli_fetch_assoc($result)) {
 			    $storeArray[] =  $row['CorrectAnswer'];  
 			}
-			
+
 	        return $storeArray;
 		}
-
 
 }

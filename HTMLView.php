@@ -19,6 +19,5 @@ class HTMLView {
 			</body>
 			</html>
 		";
-	}	
-
+	}
 }

@@ -25,13 +25,13 @@ class SiteView {
 	const ACTION_USER_SAVE_QUESTION = "saveQuestion";
 	const ACTION_USER_SAVE_QUESTION_FINISH = "saveAndQuit";
 
-	const MESSAGE_USER_LOGGED_OUT = "You logged out!";
-	const MESSAGE_USER_LOGGED_IN = "You are logged in!";
-	const MESSAGE_FAILED_LOGIN = "You desvärre failed login.";
+	const MESSAGE_USER_LOGGED_OUT = "Du har loggat ut!";
+	const MESSAGE_USER_LOGGED_IN = "Du har loggat in!";
+	const MESSAGE_FAILED_LOGIN = "Du har desvärre failat login.";
 	const MESSAGE_REGISTER_SUCCESS = "Registreringen lyckades!";
-	const MESSAGE_EDIT_SUCCESS = "The question is saved!";
-	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "The quizz is already played.";
-	const MESSAGE_FORM_WAS_NOT_CORRECT = "The form was not correctly filled in.";
+	const MESSAGE_EDIT_SUCCESS = "Frågan sparades!";
+	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "Du har redan lämnat in detta quizz.";
+	const MESSAGE_FORM_WAS_NOT_CORRECT = "Frågan fylldes inte i korrekt.";
 
 	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
 
@@ -275,7 +275,6 @@ class SiteView {
 
 		return $ret;
 	}
-
 
 	public function showRunQuizz($questionId, $quizzId, $lastquestion) {
 
@@ -558,9 +557,20 @@ class SiteView {
 		return $ret;
 	}
 
-	private $studentResultsHTML = "<table>";
+	private $studentResultsHTML = "";
 
 	public function setStudentResultsHTML($chosenUserId) {
+		$this->studentResultsHTML .="
+<table>
+	<tr>
+		<th>
+			Quizz
+		</th>
+		<th>
+			Resultat
+		</th>
+	</tr>";
+	
 		$this->studentResultsHTML .= $this->getStudentDataHTML($chosenUserId) . "</table>";
 	}
 
@@ -571,6 +581,8 @@ class SiteView {
 		$ret = "
 <h2>Välkommen till din sida, lärare. Du är användarnamn: $username</h2>
 " . $this->pageMessage . "
+<br>
+<a href='?createQuizzPage'>Tryck här för att skapa ett nytt quizzgame!</a><br>
 <h2>Dina skapade quizz</h2>
 <table border='1'>
 	<tr>
@@ -588,9 +600,9 @@ class SiteView {
 	</tr>
 " . $this->getUserQuizzHTML() . "
 </table>
-
+<br>
 <form action='?teacherChosesUniqueStudent' method='post'>
-		<label>Chose student</label>
+		<label>Se resultat för enskild student: </label>
 		<br>
 		<select name='uniqueStudent'>
 		" . $this->getStudentList() . "
@@ -601,9 +613,6 @@ class SiteView {
 " . $this->studentResultsHTML . "
 
 <br>
-
-<br>
-<a href='?createQuizzPage'>Skapa ett nytt quizzgamee!</a><br>
 <a href='?userLogsOut'>Logga ut</a>
 		";
 
