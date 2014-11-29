@@ -22,8 +22,13 @@ class SiteView {
 	const ACTION_USER_RUN_QUIZZ_GOTO_NEXT = "runQuizzGoToNext";
 	const ACTION_TEACHER_CHOSES_STUDENT = "teacherChosesUniqueStudent";
 
+	const ACTION_USER_RUN_DONE_QUIZZ ="runDoneQuizz";
+
 	const ACTION_USER_SAVE_QUESTION = "saveQuestion";
 	const ACTION_USER_SAVE_QUESTION_FINISH = "saveAndQuit";
+
+	const ACTION_USER_SHOW_RESULT_QUESTION = "showResultOfQuestion";
+
 
 	const MESSAGE_USER_LOGGED_OUT = "Du har loggat ut!";
 	const MESSAGE_USER_LOGGED_IN = "Du har loggat in!";
@@ -106,6 +111,14 @@ class SiteView {
 
 			case SiteView::ACTION_TEACHER_CHOSES_STUDENT:
 				return SiteView::ACTION_TEACHER_CHOSES_STUDENT;
+				break;
+
+			case SiteView::ACTION_USER_RUN_DONE_QUIZZ:
+				return SiteView::ACTION_USER_RUN_DONE_QUIZZ;
+				break;
+
+			case SiteView::ACTION_USER_SHOW_RESULT_QUESTION:
+				return SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
 				break;
 		}
 	}
@@ -265,11 +278,11 @@ class SiteView {
 	<br>
 	<textarea rows='4' cols='50' id='questionText' name='questionText' value=''>$questionText</textarea>
 	<br>
-	<label>Svarsalternativ: Fyll i så många alternativ du önskar. </label>
+	<label>Svarsalternativ: </label>
 	<br>
 	" . $this->getAlternativesInput($questionObj->alternatives) . "
 	<br>
-	<input type='submit' name='save' value='Uppdatera fråga'>
+	<input type='submit' name='save' value='Uppdatera fråga och återgå till huvudmenyn'>
 </form>
 		";
 
@@ -279,7 +292,6 @@ class SiteView {
 	public function showRunQuizz($questionId, $quizzId, $lastquestion) {
 
 		$this->siteModel->setActiveQuestionId($questionId);
-		//var_dump($this->siteModel->getActiveQuestionId());
 
 		$questionObj = $this->siteModel->getQuestionObject($questionId);
 		$questionText = array_shift($questionObj->questionText);
@@ -293,14 +305,16 @@ class SiteView {
 			$buttonText = "Nästa fråga";
 		}
 
-		return $this->getRunQuizzHTML($questionOrder, $questionText, $alternatives, $quizzId, $buttonText);
+		$submitButtonName = Self::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
+
+		return $this->getRunQuizzHTML($questionOrder, $questionText, $alternatives, $quizzId, $buttonText, $submitButtonName);
 	}
 
-	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $quizzId, $buttonText) {
+	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $quizzId, $buttonText, $submitButtonName) {
 
 		$ret= "
 <h2>Fråga $orderValue</h1>
-<form action='?runQuizzGoToNext=$quizzId' method='post'>
+<form action='?$submitButtonName=$quizzId' method='post'>
 	<br>
 	<p>$questionText<P>
 	<br>
@@ -308,11 +322,17 @@ class SiteView {
 	<br>
 	" . $this->getAlternativesLabels($alternatives) . "
 	<br>
-	<input type='submit' name='nextQuestion' value='$buttonText'>
+	<input type='submit' name='showResultQuestion' value='$buttonText'>
 </form>
 		";
 
 		return $ret;
+	}
+
+	public function showResultLatestQuestionView() {
+		return "result of latest question";
+
+
 	}
 
 	public function getAlternativesLabels($alternatives) {
@@ -383,10 +403,16 @@ class SiteView {
 				$secondSelected = "checked";
 			}
 			
+			$disabledAttribute = "";
+
+			if($alternativeText == "No alternative") {
+				$disabledAttribute = "disabled";
+			}
+
 			$ret .= "
-<input type='text' size='20' name='posted_alternative$number' value='$alternativeText'>
-<input type='radio' name='correctAnswer$number' value='1' $firstSelected>Rätt</input>
-<input type='radio' name='correctAnswer$number' value='2' $secondSelected>Fel</input> 
+<input type='text' size='20' name='posted_alternative$number' value='$alternativeText' $disabledAttribute>
+<input type='radio' name='correctAnswer$number' value='1' $firstSelected $disabledAttribute>Rätt</input>
+<input type='radio' name='correctAnswer$number' value='2' $secondSelected $disabledAttribute>Fel</input> 
 <br>
 			";
 		}
@@ -485,9 +511,13 @@ class SiteView {
 
 		$quizzResults = $this->siteModel->getQuizzResultsUser();
 
+		
+
 		$ret = "";
 
 		foreach ($userQuizzes as $key => $value) {
+
+			$quizzActionName = Self::ACTION_USER_RUN_QUIZZ;
 			
 			$quizzId = $userQuizzIds[$key];
 			$resultString = "";
@@ -502,7 +532,7 @@ class SiteView {
 			$ret .= "
 <tr>
 	<td>
-		<a href='?runQuizz=$quizzId'>" . $key . ". " . $value . "</a>
+		<a href='?$quizzActionName=$quizzId'>" . $key . ". " . $value . "</a>
 	</td>
 	<td>
 		$resultString
@@ -713,4 +743,18 @@ class SiteView {
 		}
 		return true;
 	}
+
+	public function ShowQuestionResultPage($userHasCorrectAnswer, $quizzId) {
+
+		$buttonName= Self::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
+		
+		if($userHasCorrectAnswer) {
+			return "Rätt Svar! <br> <a href='?buttonName=$quizzId'>Nästa fråga</a>";
+		} else {
+			return "Fel Svar! <br> <a href='?buttonName=$quizzId'>Nästa fråga</a>";
+		}
+	}
 }
+
+
+

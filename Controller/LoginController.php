@@ -122,7 +122,6 @@ class LoginController {
 					$this->siteModel->saveEditedQuestion($questionId, $this->siteView->getQuestionText(), $this->siteView->getAlternatives());
 					$quizzId = $this->siteModel->getQuizzIdFromQuestionId($questionId);
 					$this->siteView->setMessage(SiteView::MESSAGE_EDIT_SUCCESS);
-//					return $this->siteView->showChoseQuizzQuestion(array_shift($quizzId));
 					return $this->siteView->showLoggedInPage();
 					break;
 
@@ -135,15 +134,28 @@ class LoginController {
 				case SiteView::ACTION_USER_RUN_QUIZZ:
 					$quizzId = $this->siteView->getChosenItemId();
 
+
 					//Kolla så att quizzet inte finns med i finishedquizzes
 					if($this->siteModel->isQuizzDone((int) $quizzId)){
 						$this->siteView->setMessage(SiteView::MESSAGE_QUIZZ_ALLREADY_PLAYED);
 						return $this->siteView->showLoggedInPage();
-					} 
+					}
 
-					$this->siteModel->setQuizzOrderValue(1);
+
+					//Kolla om quizzet är startat
+					//Ta fram ordervalue på quizz-frågan
+
+
+					if($this->siteModel->isQuizzStartedByUser($quizzId)) {
+						$quizzOrderValue = $this->siteModel->getResumeQuizzOrderValue($quizzId);
+					} else {
+						$quizzOrderValue = 1;
+					}
+
+
+					$this->siteModel->setQuizzOrderValue($quizzOrderValue);
 					$this->siteModel->setActiveQuizzRun($quizzId);
-					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId(1, $quizzId);
+					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($quizzOrderValue, $quizzId);
 					return $this->siteView->showRunQuizz($questionId, $quizzId, false);
 					break;
 
@@ -167,6 +179,20 @@ class LoginController {
 					} else {
 						return $this->siteView->showRunQuizz($questionId, $quizzId, false);
 					}
+					break;
+
+				case SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
+					//Hämta ditt aktuella questionId;
+					//Hämta ditt userId;
+					//Hämta answerArray med svar i.
+
+					$questionId = $this->siteModel->getActiveQuestionId();
+					$userId = $this->siteModel->getUserSession();
+					$quizzId = $this->siteModel->getActiveQuizzId();
+
+					$didUserAnswerCorrect = $this->siteModel->didUserAnswerCorrect($questionId, $userId);
+
+					return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId);
 					break;
 
 				case SiteView::ACTION_TEACHER_CHOSES_STUDENT:

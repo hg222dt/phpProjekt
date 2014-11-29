@@ -90,4 +90,26 @@ class QuizzDAL {
 	}
 
 
+
+
+	public function getWholeQuizzAsArray($quizzId) {
+
+		$query = "SELECT * FROM `questions` WHERE Quizz_Id = $quizzId";
+		$result = mysqli_query($this->dbConnection, $query);
+
+		$storeArray = array();
+		while ($row = mysqli_fetch_assoc($result)) {
+		    //$storeArray[] =  $row['Name'];  
+
+			$tempQuestionObject = new QuestionObject($row['Quesion_Id'], $row['Quizz_Id'], $row['QuesionName'], $row['QuesionText'], $row['QuizzOrderValue']);
+
+			$storeArray[$row['Quesion_Id']] = $tempQuestionObject;
+
+		}
+
+        return $storeArray;
+
+	}
+
+
 }

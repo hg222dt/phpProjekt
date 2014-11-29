@@ -47,6 +47,8 @@ class SiteModel {
 
 	public function tryLogin($loginCred) {
 
+		$this->setSessionHttpUserAgent();
+
 		$resultArray = $this->userDAL->getUser($loginCred->username);
 
 		$username = $resultArray["Username"];
@@ -69,6 +71,11 @@ class SiteModel {
 			return false;
 
 		}
+	
+	}
+
+	public function didUserAnswerCorrect($questionId, $userId) {
+		return $this->resultsDAL->didUserAnswerCorrect($questionId, $userId);
 	}
 
 	public function regNewUser($postedRegCred) {
@@ -124,6 +131,16 @@ class SiteModel {
 		
 	}
 
+	public function setSessionHttpUserAgent() {
+		$_SESSION['httpUserAgent'] = $_SERVER['HTTP_USER_AGENT'];
+	}
+
+	public function getSessionHttpUserAgent() {
+		return $_SESSION['httpUserAgent'];
+	}
+
+
+
 	public function startNewQuizz($quizzName) {
 		$this->quizzDAL->createNewQuizz($quizzName, $this->getUserSession());
 
@@ -154,7 +171,8 @@ class SiteModel {
 	}
 
 	public function isUserLoggedIn() {
-		if($_SESSION['UserLoggedIn'] == true) {
+
+		if((isset($_SESSION['UserLoggedIn']) && $_SESSION['UserLoggedIn']) == true && ($this->getSessionHttpUserAgent() == $_SERVER['HTTP_USER_AGENT'])) {
 			return true;
 		}
 		return false;
@@ -327,9 +345,11 @@ class SiteModel {
 	}
 
 	public function sumUpQuizzResult($questionIdsInQuizz) {
+		/*
 		for($i=0; $i<2; $i++) {
 			$questionId = $questionIdsInQuizz[$i];
 		}
+		*/
 	}
 
 	public function saveFinishedResult($userId, $quizzId) {
@@ -393,6 +413,32 @@ class SiteModel {
 		}
 		return false;
 	}
+
+	public function isQuizzStartedByUser($quizzId) {
+
+		$userId = $this->getUserSession();
+
+		$result = $this->resultsDAL->getResultsForUserAndQuizz($userId, $quizzId);
+
+		if($result != false) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public function getResumeQuizzOrderValue($quizzId) {
+		$userId = $this->getUserSession();
+
+		$lastQuestionId = $this->resultsDAL->getLastFinishedQuestionId($userId, $quizzId);
+
+		$lastQuestionOrderValue = $this->questionDAL->getQuestionOrder($lastQuestionId);
+
+		$thisQuestionOrder = $lastQuestionOrderValue['QuizzOrderValue'] + 1;
+
+		return $thisQuestionOrder;
+	}
+
 
 	public function getAmountDoneQuizzes() {
 		return $this->finishedDAL->getAmountDoneQuizzes();

@@ -12,5 +12,5 @@ class PostedRegCred {
 		$this->password = $password;
 		$this->repeatedPassword = $repeatedPassword;
 		$this->userRole = $userRole;
-	}	
+	}
 }

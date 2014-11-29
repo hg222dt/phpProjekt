@@ -57,6 +57,7 @@ class AlternativesDAL {
 		return $storeArray;
 	}
 
+
 	public function getCorrects($questionId) {
 		$query = "SELECT Alternative_Id FROM `answer_alternatives` WHERE `Question_Id` = $questionId AND `CorrectAnswer` = 1";
 		$result = mysqli_query($this->dbConnection, $query);

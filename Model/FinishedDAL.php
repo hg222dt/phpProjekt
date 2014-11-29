@@ -15,7 +15,6 @@ class FinishedDAL {
 
 	}
 
-
 	public function addFinishedQuizz($resultInPersentage, $quizzId, $userId) {
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `finished_quizzes`
     	                                                    (`User_Id`, `Quizz_Id`, `ResultValue`)

@@ -137,4 +137,17 @@ class QuestionDAL {
             return false;
         }
 	}
+
+
+
+	public function getQuestionObject($questionId) {
+		$query = "SELECT * FROM `questions` WHERE Question_Id = $questionId";
+		$result = mysqli_query($this->dbConnection, $query);
+
+		$row = mysqli_fetch_assoc($result);
+
+		$tempQuestionObject = new QuestionObject($row['Quesion_Id'], $row['Quizz_Id'], $row['QuesionName'], $row['QuesionText'], $row['QuizzOrderValue']);
+
+        return $tempQuestionObject;
+	}
 }
