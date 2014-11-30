@@ -479,14 +479,20 @@ class SiteView {
 		//Skapar objekt för en ny användare		
 		if(isset($_POST['posted_role'])) {
 			$ret = new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
+
+			if($_POST['posted_role'] == 1) {
+				//Check för om användaren skrivit i lärarlösenordet korrekt om denne vill bli lärare.
+				if(isset($_POST['posted_teacher_password'])) {
+					$ret->teacherPassword = $_POST['posted_teacher_password'];
+				}
+			}
+
 		} else {
 			$ret =  new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
 		}
 
-		//Check för om användaren skrivit i lärarlösenordet korrekt om denne vill bli lärare.
-		if(isset($_POST['posted_teacher_password'])) {
-			$ret->teacherPassword = $_POST['posted_teacher_password'];
-		}
+
+		
 
 		return $ret;
 	}

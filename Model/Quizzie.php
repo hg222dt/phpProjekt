@@ -10,10 +10,8 @@ class Quizzie {
 	public $quizzDAL;
 
 	public function __construct() {
-
-
+		
 		//Starta skapa nytt quizz
-
 		$this->alternatives = array();
 		$this->quizzList = array();
 
@@ -23,22 +21,5 @@ class Quizzie {
 
 	public function addAlternativeToArray($text, $correctAnswer) {
 		$this->alternatives[$text] = $correctAnswer;
-
-
-	}
-
-
-	public function getSpecQuestion($questionId) {
-		//Visa speciell fråga att redigera
-
-
-	}
-
-
-	//Ska anropas när användaren postar fromulär för en fråga
-	public function saveQuestion($questionText, $alternatives) {
-
-		//Spara persistent via lämpliga DAL-lager
-
 	}
 }

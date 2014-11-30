@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * Klass som håller data kring inmatad data från registreringsformulär
+ *
+ **/
+
 class PostedRegCred {
 
 	public $username;

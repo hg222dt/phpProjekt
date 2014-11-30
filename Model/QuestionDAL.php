@@ -2,10 +2,13 @@
 
 require_once("databaseCred.php");
 
+/*
+ * Dataaccesslager för allt relaterat till frågor i quizzen
+ *
+ **/
 class QuestionDAL {
 
     private $databaseCred;	
-
 	private $dbConnection;
 	public $questionId;
 
@@ -21,6 +24,7 @@ class QuestionDAL {
 
 	}
 
+	//Skapar quizz-fråga i databasen
 	public function addQuestion($quizzId, $questionText, $quizzOrderValue) {
 		//Addera rad i table quizz
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `questions`
@@ -36,6 +40,7 @@ class QuestionDAL {
 		return $this->questionId;
 	}
 
+	//Hämtar antaler frågor i specifikt quizz
 	public function getNumberOfQuestions($quizzId) {
 
 		$query = "SELECT Question_Id FROM `questions` WHERE `Quizz_Id` = $quizzId";
@@ -49,21 +54,19 @@ class QuestionDAL {
         return $storeArray;
 	}
 
+	//Hämtar text för specifik fråga
 	public function getQuestionText($questionId) {
 
 		$query = "SELECT QuestionText FROM `questions` WHERE `Question_Id` = $questionId";
 		$result = mysqli_query($this->dbConnection, $query);
 
 		if(mysqli_num_rows($result) == 1) {
-
             $resultArray = mysqli_fetch_assoc($result);
-
             return $resultArray;
 
         } else {
-//            return false;
         	throw new Exception("Detta quizz har inga frågor.");
-        	
+     
         }
 
 		return $resultArray['QuestionText'];
@@ -106,9 +109,6 @@ class QuestionDAL {
 	public function editQuestion($questionId, $questionText, $alternativeTexts, $correctAnswers) {
 
 		$query = "UPDATE `questions` SET `QuestionText`='$questionText' WHERE `Question_Id`=$questionId";
-		
-		//$query = "UPDATE `questions` SET `QuestionText`=[value-4] WHERE 1";
-		
 
 		$result = mysqli_query($this->dbConnection, $query);
 		
@@ -121,15 +121,10 @@ class QuestionDAL {
 
 			$query2 = "UPDATE `answer_alternatives` SET `AnswerText`='$alternativeText', `CorrectAnswer`=$correctAnswer WHERE `Question_Id`= $questionId AND `AlternativeOrderValue`= $alternativeOrderValue ";
 			$result2 = mysqli_query($this->dbConnection, $query2);
-
-//			echo mysqli_errno($this->dbConnection) . ": " . mysqli_error($this->dbConnection) . "\n";
-/*
-			if(sizeof($alternativeTexts) == $i+1 ) {
-				break;
-			}*/
 		}
 	}
 
+	//Hämtar id för fråga med hjälp av id på quizz och frågans ordning i quizzet
 	public function getQuestionIdFromOrderAndQuizzId($orderValue, $quizzId) {
 		$query = "SELECT Question_Id FROM `questions` WHERE `QuizzOrderValue` = $orderValue AND `Quizz_Id` = '$quizzId'";
 		$result = mysqli_query($this->dbConnection, $query);
@@ -145,8 +140,7 @@ class QuestionDAL {
         }
 	}
 
-
-
+	//Hämtar fråga och skapar objekt utfrån hämtad data
 	public function getQuestionObject($questionId) {
 		$query = "SELECT * FROM `questions` WHERE Question_Id = $questionId";
 		$result = mysqli_query($this->dbConnection, $query);

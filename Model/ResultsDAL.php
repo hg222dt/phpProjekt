@@ -2,10 +2,14 @@
 
 require_once("databaseCred.php");
 
+/*
+ * Dataaccesslager för allt relaterat till resultat på alla enskilda quizz-frågor
+ *
+ **/
+
 class ResultsDAL {
 
 		private $databaseCred;
-	
 		private $dbConnection;
 
 		public function __construct() {
@@ -21,16 +25,14 @@ class ResultsDAL {
 
 		}
 
-
+		//Adderar resultat på specifik quizz-fråga till databas
 		public function addResult($isUserCorrect, $questionId, $quizzId, $userId) {
 			$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `quizz_results`
         	                                                    (`Question_Id`, `User_Id`, `Quizz_Id`, `CorrectAnswer`)
         	                                                    VALUES ($questionId, $userId, $quizzId, $isUserCorrect)");
-
-
 		}
 
-
+		//Hämtar  resultat på specifikt quizz för användare
 		public function getResultsForUserAndQuizz($userId, $quizzId) {
 			$results = array();
 
@@ -45,6 +47,7 @@ class ResultsDAL {
 	        return $storeArray;
 		}
 
+		//Hämtar id på senast avklarad fråga för specifik användare och quizz
 		public function getLastFinishedQuestionId($userId, $quizzId) {
 			$results = array();
 
@@ -59,6 +62,7 @@ class ResultsDAL {
 	        return $storeArray[sizeof($storeArray)-1];
 		}
 
+		//Hämtar om användare svarat korrekt på specifik fråga.
 		public function didUserAnswerCorrect($questionId, $userId) {
 			$results = array();
 
@@ -74,6 +78,7 @@ class ResultsDAL {
 			}
 		}
 
+		//KOllar om resultat på användare redan existerar i databasen
 		public function checkIfResultExists($questionId, $userId) {
 
 			$query = "SELECT `CorrectAnswer` FROM `quizz_results` WHERE `User_Id` = $userId AND `Question_Id` = $questionId";
@@ -84,7 +89,6 @@ class ResultsDAL {
 	        }
 
 	        return false;
-			
 		}
 
 }

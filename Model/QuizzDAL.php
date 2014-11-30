@@ -2,12 +2,15 @@
 
 require_once("databaseCred.php");
 
+/*
+ * Dataaccesslager för allt relaterat till quizz-tabellen i databasen
+ *
+ **/
+
 class QuizzDAL {
 	
     private $databaseCred;
-
 	private $dbConnection;
-
 	private $quizzId;
 
 	public function __construct() {
@@ -22,6 +25,7 @@ class QuizzDAL {
         }
 	}
 
+	//Skapar nytt quizz
 	public function createNewQuizz($quizzName, $username) {
 		//Addera rad i table quizz
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO quizzes
@@ -38,6 +42,7 @@ class QuizzDAL {
 		return $this->quizzId;
 	}
 
+	//Hämtar alla namn på quizz 
 	public function getUserQuizzNames($userId) {
 
 		$query = "SELECT Name FROM `quizzes` WHERE `User` = '$userId' ORDER BY Quizz_ID";
@@ -94,8 +99,6 @@ class QuizzDAL {
 		$query = "DELETE FROM `quizzes` WHERE `Quizz_Id` = $quizzId";
 		$result = mysqli_query($this->dbConnection, $query);
 	}
-
-
 
 
 	public function getWholeQuizzAsArray($quizzId) {

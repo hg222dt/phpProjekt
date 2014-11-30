@@ -18,9 +18,9 @@ class AlternativesDAL {
 
             die('Connectionfailure2: ' . mysql_error());
         }
-
 	}
 
+	//Sparar alternativ i nyskapadfråga
 	public function addAlternatives($alternativeTexts, $correctAnswers, $questionId) {
 
 		$counter = 0;
@@ -40,6 +40,7 @@ class AlternativesDAL {
         $this->dbConnection->close();
 	}
 
+	//Hämtar alternativ för en specifik fråga
 	public function getQuestionAlternatives($questionId) {
 		$query = "SELECT Alternative_Id, AnswerText, CorrectAnswer FROM `answer_alternatives` WHERE `Question_Id` = $questionId";
 		$result = mysqli_query($this->dbConnection, $query);
@@ -63,7 +64,7 @@ class AlternativesDAL {
 		return $storeArray;
 	}
 
-
+	//HÄmtar idn på korrekta alternativ
 	public function getCorrects($questionId) {
 		$query = "SELECT Alternative_Id FROM `answer_alternatives` WHERE `Question_Id` = $questionId AND `CorrectAnswer` = 1";
 		$result = mysqli_query($this->dbConnection, $query);

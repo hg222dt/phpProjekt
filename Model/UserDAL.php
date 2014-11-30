@@ -2,6 +2,11 @@
 
 require_once("databaseCred.php");
 
+/*
+ * Dataaccesslager för allt relaterat till användar-data i databasen
+ *
+ **/
+
 class UserDAL {
 
     private $databaseCred;
@@ -20,6 +25,7 @@ class UserDAL {
         }
     }
 
+    //Hämtaranvändare i databasen
     public function getUser($username) {
 
         if (mysqli_connect_errno())
@@ -43,39 +49,63 @@ class UserDAL {
         $this->dbConnection->close();
     }
 
+    //Adderar användare till daabasen
     public function addMember($postedRegCred) {
 
         $username = $postedRegCred->username;
         $password = $postedRegCred->password;
         $userRole = $postedRegCred->userRole;
         $teacherPassword = $postedRegCred->teacherPassword;
+        $teacherPasswordEncryoted = md5($teacherPassword);
 
         $encryptedPassword = md5($password);
 
-        if($userRole = 1 && $teacherPassword == "teachersSecretPassword") {  
+        if($userRole == 1) {
+            if($teacherPasswordEncryoted == "15b00b58d6355adab79defd050343357") {  
 
-            $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
+                $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
 
-            $sqlQuery = mysqli_query($this->dbConnection, $query);
+                $sqlQuery = mysqli_query($this->dbConnection, $query);
 
-            if (mysqli_num_rows($sqlQuery) > 0) {
+                if (mysqli_num_rows($sqlQuery) > 0) {
 
-                throw new Exception("Användarnamnet är upptaget");
+                    throw new Exception("Användarnamnet är upptaget");
 
+                } else {
+
+                    $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
+                                                                    (Username, Password, Role)
+                                                                    VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
+
+                    $this->dbConnection->close();
+
+                }
             } else {
-
-                $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
-                                                                (Username, Password, Role)
-                                                                VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
-
-                $this->dbConnection->close();
-
+                throw new Exception("Du måste ha ett giltigt lärar-lösenord för att kunna registrera dig som lärare. Du ska ha fått detta på din e-post. Om inte, fråga din admin.");
             }
         } else {
-            throw new Exception("Du måste ha ett giltigt lärar-lösenord för att kunna registrera dig som lärare. Du ska ha fått detta på din e-post. Om inte, fråga din admin.");
+            
+            $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
+
+                $sqlQuery = mysqli_query($this->dbConnection, $query);
+
+                if (mysqli_num_rows($sqlQuery) > 0) {
+
+                    throw new Exception("Användarnamnet är upptaget");
+
+                } else {
+
+                    $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
+                                                                    (Username, Password, Role)
+                                                                    VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
+
+                    $this->dbConnection->close();
+
+                }
         }
     }
 
+    //Hämtar alla studenters användarnamn
     public function getStudentsNames() {
 
         $query = "SELECT `User_Id`, `Username` FROM `users` WHERE `Role` = 2";

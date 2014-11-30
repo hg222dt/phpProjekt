@@ -9,6 +9,7 @@
 		public $databaseName = "201828-databas1";
 */
 
+		//Inloggningsuppgifter till lokaladatabasen
 		public $host = "localhost";
 		public $username = "root";
 		public $password = "root";

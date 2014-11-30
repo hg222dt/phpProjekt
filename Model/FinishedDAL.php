@@ -2,6 +2,10 @@
 
 require_once("databaseCred.php");
 
+/*
+ * Dataaccesslager för allt relaterat till färdiga quizz-resultat
+ *
+ **/
 class FinishedDAL {
 	
     private $databaseCred;	
@@ -21,12 +25,14 @@ class FinishedDAL {
 
 	}
 
+	//Skapar ett resultat för ett färdigspelat quizz.
 	public function addFinishedQuizz($resultInPersentage, $quizzId, $userId) {
 		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `finished_quizzes`
     	                                                    (`User_Id`, `Quizz_Id`, `ResultValue`)
     	                                                    VALUES ($userId, $quizzId, $resultInPersentage)");
 	}
 
+	//Hämtar alla färdiga resultat för specifik användare
 	public function getAllFinishedResultsUser($userId) {
 		//returnerar array med resultat på alla avklarade quizz, med tillhörande quizzId (som key?)
 		$result = array();
@@ -43,6 +49,7 @@ class FinishedDAL {
 		return $quizzResults;
 	}
 
+	//Hämtar alla quizzId för färdiga quizz för specifik användare
 	public function getAllFinishedQuizzes($userId) {
 		$result = array();
 
@@ -60,9 +67,8 @@ class FinishedDAL {
 		return $quizzIds;
 	}
 
+	//Hämtar alla färdiga resultat på quizz
 	public function getAllDoneQuizzResults() {
-		//Hur många rader finns det på ett quizzId
-		//Dela detta på antalet users
 
 		$result = array();
 
@@ -82,6 +88,7 @@ class FinishedDAL {
 		return $storeArray;
 	}
 
+	//Andel av quizzen som är klara resurenras
 	public function getAmountDoneQuizzes() {
 
 		$quizzDones = $this->getAllDoneQuizzResults();
@@ -98,6 +105,7 @@ class FinishedDAL {
 		return $quizzDones;
 	}
 
+	//Hämtar medlevärde på färdiga quizzresultat
 	public function getAverageResultsQuizzes() {
 		$result = array();
 
@@ -111,8 +119,6 @@ class FinishedDAL {
 		while($row = mysqli_fetch_assoc($result)) {
 
 			$resultPercentage = round($row['ResultValue'] * 100);
-
-			//var_dump($resultPercentage);
 
 			if(array_key_exists((int) $row['Quizz_Id'], $storeArray)) {
 				$tempArray = array();
