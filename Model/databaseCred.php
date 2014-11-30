@@ -2,17 +2,9 @@
 
 	class DatabaseCred {
 
-/*
-		public $host ="10.209.1.124";
-		public $username = "201828_fg45516";
-		public $password = "ettBraLosenord";
-		public $databaseName = "201828-databas1";
-*/
-
-		//Inloggningsuppgifter till lokaladatabasen
-		public $host = "localhost";
-		public $username = "root";
-		public $password = "root";
-		public $databaseName = "quizzgamez";
+		public $host = "<- Write your hostname here->";
+		public $username = "<- Write your database username here ->";
+		public $password = "<- Write your database password here ->";
+		public $databaseName = "<- Write your database name here ->";
 
 	}
