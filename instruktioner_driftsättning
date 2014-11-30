@@ -15,5 +15,5 @@
 
 7. När detta är gjort ska ni kunna köra siten genom att gå in på url:en till ert webbhotell.
 
-8. Databasen är förinställd med två stycken användare - en lärare och en student - samt två stycken quizz. Det går att skapa fler användare, men märk väl att för att skapa en lärare-användare måste ett specifikt lösenord även anges i registreringen. Detta lösenord är “teachersSecretPassword” vilket kan skickas ut till e-post till berörda lärare som ska ha behörighet att bli lärare i systemet.
+8. Databasen är förinställd med två stycken användare - en lärare (användarnamn: "teacher", lösenord: "teacher") och en student (användarnamn: "student", lösenord: "student") - samt två stycken quizz. Det går att skapa fler användare, men märk väl att för att skapa en lärare-användare måste ett specifikt lösenord även anges i registreringen. Detta lösenord är “teachersSecretPassword” vilket kan skickas ut till e-post till berörda lärare som ska ha behörighet att bli lärare i systemet.
 
