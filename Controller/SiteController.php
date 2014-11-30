@@ -187,14 +187,10 @@ class SiteController {
 
 				case SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
 
-
 					$quizzId = $this->siteView->getChosenItemId();
 					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
 					$questionAmount = sizeof($questionIdsInQuizz);
 					$newOrderValue = $this->siteModel->getQuizzOrderValue();
-
-
-
 
 					$answerArray = $this->siteView->getAnswerArray();
 					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
@@ -205,10 +201,6 @@ class SiteController {
 
 					$didUserAnswerCorrect = $this->siteModel->didUserAnswerCorrect($questionId, $userId);
 
-
-
-
-
 					//Om frågeOrningsVärdet är mer än antalet frågor i quizzet skickas användaren tillbakatill huvudmenyn
 					if($questionAmount == $newOrderValue) {
 						return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId, true);
@@ -218,11 +210,6 @@ class SiteController {
 						return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId, false);
 					}						
 						
-
-
-
-
-					//return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId);
 					break;
 
 				case SiteView::ACTION_TEACHER_CHOSES_STUDENT:

@@ -4,7 +4,7 @@ class HTMLView {
 
 	public function echoHTML($body) {
 		if($body === null) {
-			//kasta exception här
+			throw new Exception();
 		}
 
 		echo "

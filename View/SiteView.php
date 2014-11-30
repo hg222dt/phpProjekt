@@ -21,16 +21,11 @@ class SiteView {
 	const ACTION_USER_RUN_QUIZZ = "runQuizz";
 	const ACTION_USER_RUN_QUIZZ_GOTO_NEXT = "runQuizzGoToNext";
 	const ACTION_TEACHER_CHOSES_STUDENT = "teacherChosesUniqueStudent";
-
 	const ACTION_USER_RUN_DONE_QUIZZ ="runDoneQuizz";
-
 	const ACTION_USER_SAVE_QUESTION = "saveQuestion";
 	const ACTION_USER_SAVE_QUESTION_FINISH = "saveAndQuit";
-
 	const ACTION_USER_SHOW_RESULT_QUESTION = "showResultOfQuestion";
-
 	const ACTION_USER_RETURN_TO_MENU = "returnToMenu";
-
 
 	const MESSAGE_USER_LOGGED_OUT = "Du har loggat ut!";
 	const MESSAGE_USER_LOGGED_IN = "Du har loggat in!";
@@ -177,12 +172,15 @@ class SiteView {
 		<label for='passwordId'>Lösenord</label>
 		<input type='password' id='passwordId' size='20' name='posted_password' placeholder='********'>
 		<br>
-		<label for='passwordId'>Upprepa lösenord</label>
+		<label for='repeatedPasswordId'>Upprepa lösenord</label>
 		<input type='password' id='repeatedPasswordId' size='20' name='posted_repeated' placeholder='********'>
 		<br>
 		<label for='keepLoggedInId'>Välj behörighet:</label>		
 		<input type='radio' name='posted_role' value='1'>Lärare</input>
 		<input type='radio' name='posted_role' value='2'>Elev</input> 
+		<br>
+		<label for='teacherPassword'>Om du angivit lärare, vänligen mata in lösenord du fått via e-post.</label>
+		<input type='password' id='teacherPassword' size='20' name='posted_teacher_password' placeholder='********'>
 		<br>
 		<input type='submit' name='loginFormPosted' value='Registrera'>
 	</fieldset>
@@ -454,10 +452,16 @@ class SiteView {
 	public function getPostedRegCred() {
 
 		if(isset($_POST['posted_role'])) {
-			return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
+			$ret = new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
 		} else {
-			return new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
+			$ret =  new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
 		}
+
+		if(isset($_POST['posted_teacher_password'])) {
+			$ret->teacherPassword = $_POST['posted_teacher_password'];
+		}
+
+		return $ret;
 	}
 
 	public function getUserQuizzHTML() {

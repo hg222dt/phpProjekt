@@ -48,25 +48,31 @@ class UserDAL {
         $username = $postedRegCred->username;
         $password = $postedRegCred->password;
         $userRole = $postedRegCred->userRole;
+        $teacherPassword = $postedRegCred->teacherPassword;
 
         $encryptedPassword = md5($password);
 
-        $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
+        if($userRole = 1 && $teacherPassword == "teachersSecretPassword") {  
 
-        $sqlQuery = mysqli_query($this->dbConnection, $query);
+            $query = "SELECT * FROM `users` WHERE `Username` = '$username'";
 
-        if (mysqli_num_rows($sqlQuery) > 0) {
+            $sqlQuery = mysqli_query($this->dbConnection, $query);
 
-            throw new Exception("Användarnamnet är upptaget");
+            if (mysqli_num_rows($sqlQuery) > 0) {
 
+                throw new Exception("Användarnamnet är upptaget");
+
+            } else {
+
+                $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
+                                                                (Username, Password, Role)
+                                                                VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
+
+                $this->dbConnection->close();
+
+            }
         } else {
-
-            $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
-                                                            (Username, Password, Role)
-                                                            VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
-
-            $this->dbConnection->close();
-
+            throw new Exception("Du måste ha ett giltigt lärar-lösenord för att kunna registrera dig som lärare. Du ska ha fått detta på din e-post. Om inte, fråga din admin.");
         }
     }
 
