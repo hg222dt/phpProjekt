@@ -4,7 +4,7 @@ require_once("./View/SiteView.php");
 require_once("./Model/SiteModel.php");
 require_once("RegisterController.php");
 
-class LoginController {
+class SiteController {
 
 	private $siteView;
 	private $siteModel;
