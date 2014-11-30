@@ -15,7 +15,11 @@ class Question {
 	private $answers = array();
 
 	public function __construct($questionId) {
-		$this->questionDAL = new QuestionDAL();
+		try {
+			$this->questionDAL = new QuestionDAL();
+		} catch (Exception $e) {
+			throw $e;
+		}
 		$this->alternativesDAL = new AlternativesDAL();
 
 		$this->questionId = $questionId;

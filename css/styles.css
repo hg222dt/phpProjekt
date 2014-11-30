@@ -1,0 +1,12 @@
+.container {
+	width: 50%;
+	background-color: #DFE6DC;
+	margin-top: 30px;
+}
+
+.feedbackContainerWrongAnswer {
+	background-color: #F2C4CA;
+	width: 100%;
+}
+
+

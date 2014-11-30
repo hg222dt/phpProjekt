@@ -4,6 +4,12 @@ require_once("./View/SiteView.php");
 require_once("./Model/SiteModel.php");
 require_once("RegisterController.php");
 
+/*
+ * Kontroller-klass
+ *
+ **/
+
+
 class SiteController {
 
 	private $siteView;
@@ -75,33 +81,26 @@ class SiteController {
 					break;
 
 				case SiteView::ACTION_USER_SUBMIT_QUESTION:
-					//spara fråga i aktivt quizz
-//					try {
-						if(isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION])) {
-							if($this->siteView->isFormCorrectlyFilledIn()) {
-								$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
-								$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
-								$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
-							} else {
-								$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
-								return $this->siteView->showCreateQuizzQuestion();
-							}
+					if(isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION])) {
+						if($this->siteView->isFormCorrectlyFilledIn()) {
+							$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
+							$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
+							$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
+						} else {
+							$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
 							return $this->siteView->showCreateQuizzQuestion();
-						} else if (isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION_FINISH])) {
-							if($this->siteView->isFormCorrectlyFilledIn()) {
-								$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
-								$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
-							} else {
-								$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
-								return $this->siteView->showCreateQuizzQuestion();
-							}
-							return $this->siteView->showLoggedInPage();
 						}
-//					} catch (Exception $e) {
-//						var_dump($e->getMessage());
-//					}
-					//Visa ny fråga
-					
+						return $this->siteView->showCreateQuizzQuestion();
+					} else if (isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION_FINISH])) {
+						if($this->siteView->isFormCorrectlyFilledIn()) {
+							$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
+							$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
+						} else {
+							$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
+							return $this->siteView->showCreateQuizzQuestion();
+						}
+						return $this->siteView->showLoggedInPage();
+					}
 					break;
 
 				case SiteView::ACTION_USER_CHOSE_SPEC_QUIZZ_EDIT:

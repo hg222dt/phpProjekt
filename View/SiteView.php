@@ -301,7 +301,13 @@ class SiteView {
 		$this->siteModel->setActiveQuestionId($questionId);
 
 		$questionObj = $this->siteModel->getQuestionObject($questionId);
-		$questionText = array_shift($questionObj->questionText);
+
+		try {
+			$questionText = array_shift($questionObj->questionText);
+		} catch (Exception $e) {
+			throw $e;
+		}	
+
 		$alternatives = $questionObj->alternatives;
 		$questionOrderArr = $questionObj->questionOrder;
 		$questionOrder = $questionOrderArr['QuizzOrderValue'];
@@ -768,22 +774,26 @@ class SiteView {
 
 		$buttonName= SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
 		
-		$retStr;
+		
 
 		if($userHasCorrectAnswer) {
-
-			$retStr = "Rätt svar! ";
+			$retStr = "<div class='feedbackContainerRightAnswer'>";
+			$retStr .= "Rätt svar! ";
 			
 		} else {
-			$retStr = "Fel svar! ";
+			$retStr = "<div class='feedbackContainerWrongAnswer'>";
+			$retStr .= "Fel svar! ";
 		}
 
 		$retStr .= "<br> <a href='?$buttonName=$quizzId'>$buttonText</a> <br>";
 
 
 		if(!$lastQuestion) {
-			$retStr .= "<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>";			
+			$retStr .= "<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn. Dina svar sparas.</a>";
 		}
+
+
+		$retStr .= "</div>";
 
 		return $retStr;
 	}

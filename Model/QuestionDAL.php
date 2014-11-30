@@ -23,7 +23,7 @@ class QuestionDAL {
 
 	public function addQuestion($quizzId, $questionText, $quizzOrderValue) {
 		//Addera rad i table quizz
-		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `questions
+		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `questions`
                                                             (`Quizz_Id`, `QuestionText`, `QuizzOrderValue`)
                                                             VALUES ($quizzId, '$questionText', $quizzOrderValue)");
 
@@ -61,7 +61,9 @@ class QuestionDAL {
             return $resultArray;
 
         } else {
-            return false;
+//            return false;
+        	throw new Exception("Detta quizz har inga frågor.");
+        	
         }
 
 		return $resultArray['QuestionText'];
