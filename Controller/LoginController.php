@@ -169,18 +169,33 @@ class LoginController {
 					$this->siteModel->setQuizzOrderValue($newOrderValue);
 					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($newOrderValue, $quizzId);
 
+					//Om frågeOrningsVärdet är mer än antalet frågor i quizzet skickas användaren tillbakatill huvudmenyn
 					if($questionAmount < $newOrderValue) {
 						$resultDecimal = $this->siteModel->saveFinishedResult($this->siteModel->getUserSession(), $quizzId);
 						$this->siteView->setResultMessage($resultDecimal);
 						return $this->siteView->showLoggedInPage();
-					} else if($questionAmount == $newOrderValue) {
+					} 
+					//Om det är sista frågan i quizzet
+					else if($questionAmount == $newOrderValue) {
 						return $this->siteView->showRunQuizz($questionId, $quizzId, true);
-					} else {
+					} 
+					//Om det inte är sista frågan i quizzet
+					else {						
 						return $this->siteView->showRunQuizz($questionId, $quizzId, false);
 					}
 					break;
 
 				case SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
+
+
+					$quizzId = $this->siteView->getChosenItemId();
+					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
+					$questionAmount = sizeof($questionIdsInQuizz);
+					$newOrderValue = $this->siteModel->getQuizzOrderValue();
+
+
+
+
 					$answerArray = $this->siteView->getAnswerArray();
 					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
 
@@ -190,7 +205,24 @@ class LoginController {
 
 					$didUserAnswerCorrect = $this->siteModel->didUserAnswerCorrect($questionId, $userId);
 
-					return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId);
+
+
+
+
+					//Om frågeOrningsVärdet är mer än antalet frågor i quizzet skickas användaren tillbakatill huvudmenyn
+					if($questionAmount == $newOrderValue) {
+						return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId, true);
+					} 
+					//Om det inte är sista frågan i quizzet
+					else {
+						return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId, false);
+					}						
+						
+
+
+
+
+					//return $this->siteView->ShowQuestionResultPage($didUserAnswerCorrect, $quizzId);
 					break;
 
 				case SiteView::ACTION_TEACHER_CHOSES_STUDENT:

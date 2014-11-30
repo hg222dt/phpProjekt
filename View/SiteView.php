@@ -754,7 +754,13 @@ class SiteView {
 		return true;
 	}
 
-	public function ShowQuestionResultPage($userHasCorrectAnswer, $quizzId) {
+	public function ShowQuestionResultPage($userHasCorrectAnswer, $quizzId, $lastQuestion) {
+
+		if($lastQuestion) {
+			$buttonText = "Lämna in!";
+		} else {
+			$buttonText = "Nästa fråga!";
+		}
 
 		$buttonName= SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
 		
@@ -768,8 +774,12 @@ class SiteView {
 			$retStr = "Fel svar! ";
 		}
 
-		$retStr .= "<br> <a href='?$buttonName=$quizzId'>Nästa fråga</a> <br> <a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>";
+		$retStr .= "<br> <a href='?$buttonName=$quizzId'>$buttonText</a> <br>";
 
+
+		if(!$lastQuestion) {
+			$retStr .= "<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>";			
+		}
 
 		return $retStr;
 	}
