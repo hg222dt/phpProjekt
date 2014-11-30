@@ -1,12 +1,18 @@
 <?php
 
+require_once("databaseCred.php");
+
 class ResultsDAL {
+
+		private $databaseCred;
 	
 		private $dbConnection;
 
 		public function __construct() {
 
-			$this->dbConnection = mysqli_connect("localhost", "root", "root", "quizzgamez");
+			$this->databaseCred = new DatabaseCred();
+
+			$this->dbConnection = mysqli_connect($this->databaseCred->host, $this->databaseCred->username, $this->databaseCred->password, $this->databaseCred->databaseName);
 
 	        if(!$this->dbConnection) {
 
@@ -42,7 +48,7 @@ class ResultsDAL {
 		public function getLastFinishedQuestionId($userId, $quizzId) {
 			$results = array();
 
-			$query = "SELECT `Question_Id` FROM `quizz_results` WHERE `User_Id` = $userId AND `Quizz_Id` = $quizzId";
+			$query = "SELECT `Question_Id` FROM `quizz_results` WHERE `User_Id` = $userId AND `Quizz_Id` = $quizzId ORDER BY `Question_Id` ASC";
 			$result = mysqli_query($this->dbConnection, $query);
 
 			$storeArray = Array();
@@ -66,6 +72,19 @@ class ResultsDAL {
 			} else if ($row[`CorrectAnswer`] == 2) {
 				return false;
 			}
+		}
+
+		public function checkIfResultExists($questionId, $userId) {
+
+			$query = "SELECT `CorrectAnswer` FROM `quizz_results` WHERE `User_Id` = $userId AND `Question_Id` = $questionId";
+			$result = mysqli_query($this->dbConnection, $query);
+
+	        if (mysqli_num_rows($result) > 0) {
+	        	return true;
+	        }
+
+	        return false;
+			
 		}
 
 }

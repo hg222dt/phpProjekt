@@ -75,7 +75,13 @@ class SiteModel {
 	}
 
 	public function didUserAnswerCorrect($questionId, $userId) {
-		return $this->resultsDAL->didUserAnswerCorrect($questionId, $userId);
+		//return $this->resultsDAL->didUserAnswerCorrect($questionId, $userId);
+
+		if($_SESSION['correctAnswerQuestion$questionId'] == 1) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public function regNewUser($postedRegCred) {
@@ -310,46 +316,49 @@ class SiteModel {
 
 		$falseFound = false;
 
-		foreach ($answerArray as $key2 => $answerValue) {
-
-			if(!$this->doesUserInputMatchAnyCorrectValue($answerValue, $correctArray)) {
-				$_SESSION['correctAnswerQuestion$questionId'] = 2;
-				$falseFound = true;
-				$isUserCorrect = 2;
-			}
-		}	
-
-		if($falseFound == false) {
-
+		if(!$this->doesUserInputMatchAllCorrectValue($answerArray, $correctArray)) {
+			$_SESSION['correctAnswerQuestion$questionId'] = 2;
+			$falseFound = true;
+			$isUserCorrect = 2;
+		} else {
 			//Skicka true till dal
 			$isUserCorrect = 1;
-
 			$_SESSION['correctAnswerQuestion$questionId'] = 1;
-		}
 
-		//Skicka true till dal
+		}
 
 		$quizzId = $this->getActiveQuizzRun();
 		$userId = $this->getUserSession();
 
-		$this->resultsDAL->addResult((int) $isUserCorrect, (int) $questionId, (int) $quizzId, (int) $userId);
+		$resultExists = $this->resultsDAL->checkIfResultExists($questionId, $userId);
+
+		if(!$resultExists) {
+			$this->resultsDAL->addResult((int) $isUserCorrect, (int) $questionId, (int) $quizzId, (int) $userId);
+		}
 	}
 
-	public function doesUserInputMatchAnyCorrectValue($answerValue, $correctArray) {
-		foreach ($correctArray as $key => $correctValue) {
-			if((int) $correctValue == (int) $answerValue) {
-				return true;
+	public function doesUserInputMatchAllCorrectValue($answerArray, $correctArray) {
+		
+		$newCorrectArray = array();
+		foreach ($correctArray as $key => $value) {
+			if($value != "") {
+				array_push($newCorrectArray, $value);
 			}
 		}
-		return false;
-	}
 
-	public function sumUpQuizzResult($questionIdsInQuizz) {
-		/*
-		for($i=0; $i<2; $i++) {
-			$questionId = $questionIdsInQuizz[$i];
+		if(sizeof($answerArray) != sizeof($newCorrectArray)) {
+			return false;
 		}
-		*/
+
+		foreach ($newCorrectArray as $key2 => $correctValue) {
+
+			if($answerArray[$key2] != $correctValue) {
+				return false;
+			}
+		}
+
+		return true;
+
 	}
 
 	public function saveFinishedResult($userId, $quizzId) {

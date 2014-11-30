@@ -1,12 +1,18 @@
 <?php
 
+require_once("databaseCred.php");
+
 class UserDAL {
+
+    private $databaseCred;
 
 	private $dbConnection;
 
 	public function __construct() {
 
-        $this->dbConnection = mysqli_connect("localhost", "root", "root", "quizzgamez");
+        $this->databaseCred = new DatabaseCred();
+
+        $this->dbConnection = mysqli_connect($this->databaseCred->host, $this->databaseCred->username, $this->databaseCred->password, $this->databaseCred->databaseName);
 
         if(!$this->dbConnection) {
 
@@ -55,9 +61,9 @@ class UserDAL {
 
         } else {
 
-            $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Users
+            $sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO users
                                                             (Username, Password, Role)
-                                                            VALUES ('$username', '$encryptedPassword', $userRole)");
+                                                            VALUES ('$username', '$encryptedPassword', $userRole)") or die(mysqli_error($this->dbConnection));
 
             $this->dbConnection->close();
 

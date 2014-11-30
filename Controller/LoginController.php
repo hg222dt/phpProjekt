@@ -160,8 +160,8 @@ class LoginController {
 					break;
 
 				case SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT:
-					$answerArray = $this->siteView->getAnswerArray();
-					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
+					//$answerArray = $this->siteView->getAnswerArray();
+					//$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
 					$quizzId = $this->siteView->getChosenItemId();
 					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
 					$questionAmount = sizeof($questionIdsInQuizz);
@@ -170,7 +170,6 @@ class LoginController {
 					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($newOrderValue, $quizzId);
 
 					if($questionAmount < $newOrderValue) {
-						$this->siteModel->sumUpQuizzResult($questionIdsInQuizz);
 						$resultDecimal = $this->siteModel->saveFinishedResult($this->siteModel->getUserSession(), $quizzId);
 						$this->siteView->setResultMessage($resultDecimal);
 						return $this->siteView->showLoggedInPage();
@@ -182,13 +181,12 @@ class LoginController {
 					break;
 
 				case SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
-					//Hämta ditt aktuella questionId;
-					//Hämta ditt userId;
-					//Hämta answerArray med svar i.
+					$answerArray = $this->siteView->getAnswerArray();
+					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
 
 					$questionId = $this->siteModel->getActiveQuestionId();
 					$userId = $this->siteModel->getUserSession();
-					$quizzId = $this->siteModel->getActiveQuizzId();
+					$quizzId = $this->siteView->getChosenItemId();
 
 					$didUserAnswerCorrect = $this->siteModel->didUserAnswerCorrect($questionId, $userId);
 
@@ -199,6 +197,13 @@ class LoginController {
 					$chosenUserId = $this->siteView->getChosenStudent();
 					$this->siteView->setStudentResultsHTML($chosenUserId);
 					return $this->siteView->showLoggedInPage();
+					break;
+
+				case SiteView::ACTION_USER_RETURN_TO_MENU:
+					if($this->siteModel->isUserLoggedIn()) {
+						return $this->siteView->showLoggedInPage();
+					}
+					return $this->siteView->showLobby();
 					break;
 
 				default:

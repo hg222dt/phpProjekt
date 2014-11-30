@@ -1,14 +1,19 @@
 <?php
 
+require_once("databaseCred.php");
+
 class QuestionDAL {
-	
+
+    private $databaseCred;	
 
 	private $dbConnection;
 	public $questionId;
 
 	public function __construct() {
 
-		$this->dbConnection = mysqli_connect("localhost", "root", "root", "quizzgamez");
+		$this->databaseCred = new DatabaseCred();
+
+		$this->dbConnection = mysqli_connect($this->databaseCred->host, $this->databaseCred->username, $this->databaseCred->password, $this->databaseCred->databaseName);
 
         if(!$this->dbConnection) {
             die('Connectionfailure1: ' . mysql_error());
@@ -18,7 +23,7 @@ class QuestionDAL {
 
 	public function addQuestion($quizzId, $questionText, $quizzOrderValue) {
 		//Addera rad i table quizz
-		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO Questions
+		$sqlInsert = mysqli_query($this->dbConnection, "INSERT INTO `questions
                                                             (`Quizz_Id`, `QuestionText`, `QuizzOrderValue`)
                                                             VALUES ($quizzId, '$questionText', $quizzOrderValue)");
 

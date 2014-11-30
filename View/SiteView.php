@@ -29,6 +29,8 @@ class SiteView {
 
 	const ACTION_USER_SHOW_RESULT_QUESTION = "showResultOfQuestion";
 
+	const ACTION_USER_RETURN_TO_MENU = "returnToMenu";
+
 
 	const MESSAGE_USER_LOGGED_OUT = "Du har loggat ut!";
 	const MESSAGE_USER_LOGGED_IN = "Du har loggat in!";
@@ -120,6 +122,10 @@ class SiteView {
 			case SiteView::ACTION_USER_SHOW_RESULT_QUESTION:
 				return SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
 				break;
+
+			case SiteView::ACTION_USER_RETURN_TO_MENU:
+				return SiteView::ACTION_USER_RETURN_TO_MENU;
+				break;
 		}
 	}
 
@@ -158,6 +164,7 @@ class SiteView {
 	}
 
 	public function showRegisterPage() {
+
 		$ret = "
 <h2>Skapa ett nytt konto.</h2>
 <form action='?userTryRegister' method='post'>
@@ -179,7 +186,8 @@ class SiteView {
 		<br>
 		<input type='submit' name='loginFormPosted' value='Registrera'>
 	</fieldset>
-</form>
+</form> 
+<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>
 		";
 
 		return $ret;
@@ -213,6 +221,7 @@ class SiteView {
 <br>
 <input type='submit' name='saveQuestion' value='Skapa quizz!'>
 </form>
+<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>
 		";
 
 		return $ret;
@@ -305,7 +314,7 @@ class SiteView {
 			$buttonText = "Nästa fråga";
 		}
 
-		$submitButtonName = Self::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
+		$submitButtonName = SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
 
 		return $this->getRunQuizzHTML($questionOrder, $questionText, $alternatives, $quizzId, $buttonText, $submitButtonName);
 	}
@@ -324,6 +333,7 @@ class SiteView {
 	<br>
 	<input type='submit' name='showResultQuestion' value='$buttonText'>
 </form>
+<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>
 		";
 
 		return $ret;
@@ -517,7 +527,7 @@ class SiteView {
 
 		foreach ($userQuizzes as $key => $value) {
 
-			$quizzActionName = Self::ACTION_USER_RUN_QUIZZ;
+			$quizzActionName = SiteView::ACTION_USER_RUN_QUIZZ;
 			
 			$quizzId = $userQuizzIds[$key];
 			$resultString = "";
@@ -746,15 +756,33 @@ class SiteView {
 
 	public function ShowQuestionResultPage($userHasCorrectAnswer, $quizzId) {
 
-		$buttonName= Self::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
+		$buttonName= SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
 		
+		$retStr;
+
 		if($userHasCorrectAnswer) {
-			return "Rätt Svar! <br> <a href='?buttonName=$quizzId'>Nästa fråga</a>";
+
+			$retStr = "Rätt svar! ";
+			
 		} else {
-			return "Fel Svar! <br> <a href='?buttonName=$quizzId'>Nästa fråga</a>";
+			$retStr = "Fel svar! ";
 		}
+
+		$retStr .= "<br> <a href='?$buttonName=$quizzId'>Nästa fråga</a> <br> <a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn</a>";
+
+
+		return $retStr;
 	}
 }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,14 +1,20 @@
 <?php
 
+require_once("databaseCred.php");
+
 class QuizzDAL {
 	
+    private $databaseCred;
+
 	private $dbConnection;
 
 	private $quizzId;
 
 	public function __construct() {
 
-		$this->dbConnection = mysqli_connect("localhost", "root", "root", "quizzgamez");
+		$this->databaseCred = new DatabaseCred();
+
+		$this->dbConnection = mysqli_connect($this->databaseCred->host, $this->databaseCred->username, $this->databaseCred->password, $this->databaseCred->databaseName);
 
         if(!$this->dbConnection) {
 
