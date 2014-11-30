@@ -4,8 +4,14 @@ require_once("./Model/SiteModel.php");
 require_once("./View/PostedLoginCred.php");
 require_once("./View/PostedRegCred.php");
 
+/*
+ * KLass som hanterar sitens vy-relaterade data
+ *
+ **/
+
 class SiteView {
 
+	//Konstanter för användar-actions
 	const ACTION_USER_GOTO_REGISTER = "userGotoRegister";
 	const ACTION_USER_LOGS_OUT = "userLogsOut";
 	const ACTION_USER_LOGS_IN_DEFAULT = "userTryLogIn";
@@ -27,6 +33,7 @@ class SiteView {
 	const ACTION_USER_SHOW_RESULT_QUESTION = "showResultOfQuestion";
 	const ACTION_USER_RETURN_TO_MENU = "returnToMenu";
 
+	//Användarmeddlenaden
 	const MESSAGE_USER_LOGGED_OUT = "Du har loggat ut!";
 	const MESSAGE_USER_LOGGED_IN = "Du har loggat in!";
 	const MESSAGE_FAILED_LOGIN = "Du har desvärre failat login.";
@@ -34,6 +41,7 @@ class SiteView {
 	const MESSAGE_EDIT_SUCCESS = "Frågan sparades!";
 	const MESSAGE_QUIZZ_ALLREADY_PLAYED = "Du har redan lämnat in detta quizz.";
 	const MESSAGE_FORM_WAS_NOT_CORRECT = "Frågan fylldes inte i korrekt.";
+	const MESSAGE_ERROR_FATAL = "Sidan kunde inte laddas.";
 
 	const NAME_EMPTY_ALTERNATIVE_INPUT = "No alternative";
 
@@ -48,6 +56,8 @@ class SiteView {
 	}
 
 	public function getUserAction() {
+
+		//Hämtar ut vilken användar-action som valts
 		switch(key($_GET)) {
 
 			case SiteView::ACTION_USER_GOTO_REGISTER:
@@ -124,11 +134,12 @@ class SiteView {
 		}
 	}
 
-	//Sets a message on top of the rendered page
+	//Sätter ett meddelande till toppen av sidan
 	public function setMessage($message) {
 		$this->pageMessage = '<p>' . $message . '</p>';
 	}
 
+	//Sätter resultat meddelande efter spelat quizz till användaren.
 	public function setResultMessage($resultDecimal) {
 
 		$resultInPercentage = round($resultDecimal * 100);
@@ -136,6 +147,7 @@ class SiteView {
 		$this->pageMessage = '<p>Du hade ' . $resultInPercentage . ' % rätt på quizzet!</p>';
 	}
 
+	//Sida för inloggning
 	public function showLobby() {
 
 		$ret = "
@@ -158,6 +170,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Sida för att registera användare
 	public function showRegisterPage() {
 
 		$ret = "
@@ -191,13 +204,17 @@ class SiteView {
 		return $ret;
 	}
 
+	//Sida inloggad användare
 	public function showLoggedInPage() {
 
 		switch($this->siteModel->getSessionUserRole()) {
+
+			//En lärare har loggat in
 			case SiteModel::USER_TYPE_TEACHER:
 				return $this->getTeacherLayout();
 				break;
 
+			//En student har loggat in
 			case SiteModel::USER_TYPE_STUDENT:
 				return $this->getStudentLayout();
 				break;
@@ -208,6 +225,7 @@ class SiteView {
 		}
 	}
 
+	//Första sida för att skapa ett quizz
 	public function showCreateQuizz() {
 
 		$ret="
@@ -225,6 +243,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Sida för att skapa fråga till ett quizz
 	public function showCreateQuizzQuestion() {
 
 		$questionId = $this->siteModel->getQuizzOrderValue();
@@ -268,6 +287,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Editera quizz
 	public function showEditQuizzQuestion($questionId) {
 
 		//baserat på questionid, hämta: frågetext, alternativ, och rätt eller fel. samt frågeordning.
@@ -296,6 +316,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Sida för att spela quizz
 	public function showRunQuizz($questionId, $quizzId, $lastquestion) {
 
 		$this->siteModel->setActiveQuestionId($questionId);
@@ -323,6 +344,7 @@ class SiteView {
 		return $this->getRunQuizzHTML($questionOrder, $questionText, $alternatives, $quizzId, $buttonText, $submitButtonName);
 	}
 
+	//Html gernereras här för att stoppas i vyn för att spela quizz
 	public function getRunQuizzHTML($orderValue, $questionText, $alternatives, $quizzId, $buttonText, $submitButtonName) {
 
 		$ret= "
@@ -343,12 +365,7 @@ class SiteView {
 		return $ret;
 	}
 
-	public function showResultLatestQuestionView() {
-		return "result of latest question";
-
-
-	}
-
+	//Hämta vy-data för de olika alternativen till en fråga
 	public function getAlternativesLabels($alternatives) {
 		$alternativeTexts = $alternatives[0];
 		$correctAnswers = $alternatives[1];
@@ -394,7 +411,7 @@ class SiteView {
 
 	}
 
-
+	//Hämtar förifyllda alternativ på fråga som ska editeras
 	public function getAlternativesInput($alternatives) {
 
 		$alternativeTexts = $alternatives[0];
@@ -434,6 +451,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Sida för att välja vilken quizz-fråga som ska editeras
 	public function showChoseQuizzQuestion($quizzId) {
 		//Hämta hur många frågor som har skapats
 		$questionArray = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
@@ -450,19 +468,22 @@ class SiteView {
 		return $ret;
 	}
 
-
+	//Hämtar data som postats i formuläret för inloggning
 	public function getPostedLoginCred() {
 		return new PostedLoginCred($_POST['posted_username'], $_POST['posted_password']);
 	}
 
+	//Hämtar data som postats i formulär för registerering av ny användare
 	public function getPostedRegCred() {
 
+		//Skapar objekt för en ny användare		
 		if(isset($_POST['posted_role'])) {
 			$ret = new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], $_POST['posted_role']);
 		} else {
 			$ret =  new PostedRegCred($_POST['posted_username'], $_POST['posted_password'], $_POST['posted_repeated'], "noInput");
 		}
 
+		//Check för om användaren skrivit i lärarlösenordet korrekt om denne vill bli lärare.
 		if(isset($_POST['posted_teacher_password'])) {
 			$ret->teacherPassword = $_POST['posted_teacher_password'];
 		}
@@ -470,8 +491,9 @@ class SiteView {
 		return $ret;
 	}
 
+	//Hämtar och presenterar alla quizz för att presenteras för en lärare
 	public function getUserQuizzHTML() {
-		//Hämta alla användarens quizz
+		//Hämta alla quizz för specifik lärare
 		$userQuizzes = $this->siteModel->getUserQuizzes();
 		$userQuizzIds = $this->siteModel->getUserQuizzIds();
 		$amountDones = $this->siteModel->getAmountDoneQuizzes();
@@ -481,7 +503,6 @@ class SiteView {
 
 		foreach ($userQuizzes as $key => $value) {
 			$quizzId = $userQuizzIds[$key];
-
 
 			$amountDone = "";
 			$averageScore = "";
@@ -524,14 +545,13 @@ class SiteView {
 		return $ret;
 	}
 
+	//Hämtar alla quizz för att presenteras för en elev
 	public function getAllQuizzForPlayHTML() {
 		//Hämta alla användarens quizz
 		$userQuizzes = $this->siteModel->getAllQuizzes();
 		$userQuizzIds = $this->siteModel->getAllQuizzIds();
 
 		$quizzResults = $this->siteModel->getQuizzResultsUser();
-
-		
 
 		$ret = "";
 
@@ -568,6 +588,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Hämtar resultat för en elevs quizz.
 	public function getStudentDataHTML($userId) {
 		$userQuizzes = $this->siteModel->getAllQuizzes();
 		$userQuizzIds = $this->siteModel->getAllQuizzIds();
@@ -624,6 +645,7 @@ class SiteView {
 		$this->studentResultsHTML .= $this->getStudentDataHTML($chosenUserId) . "</table>";
 	}
 
+	//Hämtar huvudmeny för lärare
 	public function getTeacherLayout() {
 		$currentUser = $this->siteModel->currentUser;
 		$username = $this->siteModel->getUserSessionUsername();
@@ -669,6 +691,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Hämtar huvudmeny för student
 	public function getStudentLayout() {
 
 		$currentUser = $this->siteModel->getUserSessionUsername();
@@ -691,6 +714,7 @@ class SiteView {
 		return $ret;
 	}
 
+	//Hämtar studentlista
 	public function getStudentList() {
 
 		$students = $this->siteModel->getStudentsNames();
@@ -704,7 +728,7 @@ class SiteView {
 		return $ret;
 	}
 
-
+	//Hämtar alternativ till fråga i quizz
 	public function getAlternatives() {
 
 		$alternatives = array();
@@ -738,11 +762,13 @@ class SiteView {
 		return $_POST['questionText'];
 	}
 
+	//Hämtar id ur url
 	public function getChosenItemId() {
 		$url = $_SERVER['REQUEST_URI'];
 		return substr($url, strpos($url, "=") + 1);
 	}
 
+	//Hämtar array innhållandes aid på de svarsalternativ användaren valt i quizzfråga
 	public function getAnswerArray() {
 		if(!empty($_POST['userAnswerList'])) {
 			$answerArray = array();
@@ -753,10 +779,12 @@ class SiteView {
 		}
 	}
 
+	//Hämtar postat id på student som läraren valt att se specifika uppgifter på
 	public function getChosenStudent() {
 		return $_POST['uniqueStudent'];
 	}
 
+	//Formuläret när man skapar quizzfråga måste minst innehålla en fråge-text
 	public function isFormCorrectlyFilledIn() {
 		if($this->getQuestionText() == null) {
 			return false;
@@ -764,8 +792,10 @@ class SiteView {
 		return true;
 	}
 
+	//Visar sida för användaren efter quizz-fråga, som ger feedback om användaren svarat rätt eller fel.
 	public function ShowQuestionResultPage($userHasCorrectAnswer, $quizzId, $lastQuestion) {
 
+		//Texten på knappen ändras beroend epå om det är sista frågan eller inte.
 		if($lastQuestion) {
 			$buttonText = "Lämna in!";
 		} else {
@@ -775,19 +805,21 @@ class SiteView {
 		$buttonName= SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT;
 		
 		
-
+		//Om användaren har svart rätt
 		if($userHasCorrectAnswer) {
 			$retStr = "<div class='feedbackContainerRightAnswer'>";
 			$retStr .= "Rätt svar! ";
 			
-		} else {
+		} 
+		//Om användaren har svarat fel.
+		else {
 			$retStr = "<div class='feedbackContainerWrongAnswer'>";
 			$retStr .= "Fel svar! ";
 		}
 
 		$retStr .= "<br> <a href='?$buttonName=$quizzId'>$buttonText</a> <br>";
 
-
+		//Om det inte är sista frågan, så ska knapp för att gå tillbaka till huvudmenyn visas.
 		if(!$lastQuestion) {
 			$retStr .= "<a href='?" . SiteView::ACTION_USER_RETURN_TO_MENU . "'> Tillbaka till huvudmenyn. Dina svar sparas.</a>";
 		}

@@ -31,14 +31,18 @@ class SiteController {
 
 				case SiteView::ACTION_USER_LOGS_IN_DEFAULT:
 					
+					//Om användaren är inloggad redan på cookie
 					if($this->siteModel->isUserLoggedIn()) {
 						return $this->siteView->showLoggedInPage();
 					}
 					
+					//Om användaren kan logga in med inloggningsuppgifter
 					if($this->siteModel->tryLogin($this->siteView->getPostedLoginCred())){
 						$this->siteView->setMessage(SiteView::MESSAGE_USER_LOGGED_IN);
 						return $this->siteView->showLoggedInPage();
-					} else {
+					} 
+					//Inloggningen har fallerat
+					else {
 						$this->siteView->setMessage(SiteView::MESSAGE_FAILED_LOGIN);
 						return $this->siteView->showLobby();
 					}
@@ -56,12 +60,15 @@ class SiteController {
 					break;
 
 				case SiteView::ACTION_USER_TRY_REGISTER:
+					//Inmatade uppgifter från användaren hämtas
 					$postedRegCred = $this->siteView->getPostedRegCred();
 					try {
+						//Försök görs för att registrera användaren.
 						$regValidation = $this->siteModel->regNewUser($postedRegCred);
 						$this->siteView->setMessage(SiteView::MESSAGE_REGISTER_SUCCESS);
 						return $this->siteView->showLobby();
 					} catch (Exception $e) {
+						//Felmeddelande sätts om användaren matat in ogiltiga uppgiter på något sätt
 						$this->siteView->setMessage($e->getMessage());
 						return $this->siteView->showRegisterPage();
 					}
@@ -82,20 +89,26 @@ class SiteController {
 
 				case SiteView::ACTION_USER_SUBMIT_QUESTION:
 					if(isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION])) {
+						//Formuläret har fyllts i korrekt
 						if($this->siteView->isFormCorrectlyFilledIn()) {
 							$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
 							$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
 							$this->siteModel->setQuizzOrderValue($this->siteModel->getQuizzOrderValue()+1);
-						} else {
+						} 
+						//Formuläret har inte fyllts i korrekt
+						else {
 							$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
 							return $this->siteView->showCreateQuizzQuestion();
 						}
 						return $this->siteView->showCreateQuizzQuestion();
 					} else if (isset($_POST[SiteView::ACTION_USER_SAVE_QUESTION_FINISH])) {
+						//m formulär är korrekt ifyllt
 						if($this->siteView->isFormCorrectlyFilledIn()) {
 							$this->siteModel->saveQuizzQuestion($this->siteView->getQuestionText());
 							$this->siteModel->saveQuizzAlternatives($this->siteView->getAlternatives());
-						} else {
+						} 
+						//Formuläret är inte korrekt ifyllt
+						else {
 							$this->siteView->setMessage(SiteView::MESSAGE_FORM_WAS_NOT_CORRECT);
 							return $this->siteView->showCreateQuizzQuestion();
 						}
@@ -116,7 +129,6 @@ class SiteController {
 					break;
 
 				case SiteView::ACTION_USER_SAVE_EDIT_QUESTION:
-					//Ta fram id för quizz också? med hjälp av questionId;
 					$questionId = $this->siteView->getChosenItemId();
 					$this->siteModel->saveEditedQuestion($questionId, $this->siteView->getQuestionText(), $this->siteView->getAlternatives());
 					$quizzId = $this->siteModel->getQuizzIdFromQuestionId($questionId);
@@ -133,34 +145,28 @@ class SiteController {
 				case SiteView::ACTION_USER_RUN_QUIZZ:
 					$quizzId = $this->siteView->getChosenItemId();
 
-
 					//Kolla så att quizzet inte finns med i finishedquizzes
 					if($this->siteModel->isQuizzDone((int) $quizzId)){
 						$this->siteView->setMessage(SiteView::MESSAGE_QUIZZ_ALLREADY_PLAYED);
 						return $this->siteView->showLoggedInPage();
 					}
 
-
-					//Kolla om quizzet är startat
-					//Ta fram ordervalue på quizz-frågan
-
-
+					//Kollar om quizzet är startat redan
 					if($this->siteModel->isQuizzStartedByUser($quizzId)) {
 						$quizzOrderValue = $this->siteModel->getResumeQuizzOrderValue($quizzId);
 					} else {
 						$quizzOrderValue = 1;
 					}
 
-
+					//Sätter värdet på vilken fråga som spelaren befinner sig på i quizset.
 					$this->siteModel->setQuizzOrderValue($quizzOrderValue);
 					$this->siteModel->setActiveQuizzRun($quizzId);
 					$questionId = $this->siteModel->getQuestionIdFromOrderAndQuizzId($quizzOrderValue, $quizzId);
 					return $this->siteView->showRunQuizz($questionId, $quizzId, false);
 					break;
 
+				//Anändaren väljer att gå till nästa fråga i quizzet
 				case SiteView::ACTION_USER_RUN_QUIZZ_GOTO_NEXT:
-					//$answerArray = $this->siteView->getAnswerArray();
-					//$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
 					$quizzId = $this->siteView->getChosenItemId();
 					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
 					$questionAmount = sizeof($questionIdsInQuizz);
@@ -184,13 +190,16 @@ class SiteController {
 					}
 					break;
 
+				//UserAction att gå till sida för att få feedback opå om svaret på quizz-fråga var rätt eller fel.
 				case SiteView::ACTION_USER_SHOW_RESULT_QUESTION;
 
+					//Uppgifter om Quizz hämtas ut
 					$quizzId = $this->siteView->getChosenItemId();
 					$questionIdsInQuizz = $this->siteModel->getNumberOfQuestionsInQuizz($quizzId);
 					$questionAmount = sizeof($questionIdsInQuizz);
 					$newOrderValue = $this->siteModel->getQuizzOrderValue();
 
+					//Användarens svar från frågan sparas.
 					$answerArray = $this->siteView->getAnswerArray();
 					$this->siteModel->saveQuestionAnswer($answerArray, $this->siteModel->getActiveQuestionId());
 
@@ -198,6 +207,7 @@ class SiteController {
 					$userId = $this->siteModel->getUserSession();
 					$quizzId = $this->siteView->getChosenItemId();
 
+					//Hämtar uppgifteom användaren svarade rät tpå förra frågan.
 					$didUserAnswerCorrect = $this->siteModel->didUserAnswerCorrect($questionId, $userId);
 
 					//Om frågeOrningsVärdet är mer än antalet frågor i quizzet skickas användaren tillbakatill huvudmenyn
@@ -211,13 +221,16 @@ class SiteController {
 						
 					break;
 
+				//Visar meny för student
 				case SiteView::ACTION_TEACHER_CHOSES_STUDENT:
 					$chosenUserId = $this->siteView->getChosenStudent();
 					$this->siteView->setStudentResultsHTML($chosenUserId);
 					return $this->siteView->showLoggedInPage();
 					break;
 
+				//Visar meny för lärare
 				case SiteView::ACTION_USER_RETURN_TO_MENU:
+					//Om användare är inloggad
 					if($this->siteModel->isUserLoggedIn()) {
 						return $this->siteView->showLoggedInPage();
 					}
@@ -225,6 +238,7 @@ class SiteController {
 					break;
 
 				default:
+					//Om användare är inloggad
 					if($this->siteModel->isUserLoggedIn()) {
 						return $this->siteView->showLoggedInPage();
 					}
@@ -232,7 +246,7 @@ class SiteController {
 					break;
 			}	
 		} catch (Exception $e) {
-
+			return SiteView::MESSAGE_ERROR_FATAL;
 		}
 	}
 }
