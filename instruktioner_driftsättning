@@ -1,0 +1,19 @@
+#Instruktioner för driftsättning av quizz-system
+
+
+1. Alla filer ska placeras in direkt under webb-domänens root-mapp (Soretrade i sina korrekta mappar som de har levererats.).
+
+2. Databasen måste importeras till webbhotellet. Detta kan bara göras om det finns mysql-funktionalitet där. 
+
+3. Ni importerar filen db.sql som återfinns i mappen “database” bland filerna. Detta görs genom finna imoprterings-funktionaliteten i ert mysql-gränssnitt. 
+
+4. När databasen är importerad, letar ni upp uppgifter i databasen för dess host, användarnamn, lösenord och databasnamn. 
+
+5. Ni letar sedan upp filen databaseCred.php som ni öppnar upp.
+
+6. I denna fil matar ni in de uppgifter om databasen som ni nyss inhämtat, på resoektive angiven rad. Viktigt är att ni omger respektive uppgift med citationstecken (“).
+
+7. När detta är gjort ska ni kunna köra siten genom att gå in på url:en till ert webbhotell.
+
+8. Databasen är förinställd med två stycken användare - en lärare och en student - samt två stycken quizz. Det går att skapa fler användare, men märk väl att för att skapa en lärare-användare måste ett specifikt lösenord även anges i registreringen. Detta lösenord är “teachersSecretPassword” vilket kan skickas ut till e-post till berörda lärare som ska ha behörighet att bli lärare i systemet.
+
